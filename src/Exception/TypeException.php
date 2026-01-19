@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Exception;
 
+use Stringable;
+
 /**
  * Thrown when there's an error in type handling or conversion.
  */
@@ -26,9 +28,13 @@ final class TypeException extends OgamException
 
     public static function invalidEnumValue(string $enumClass, mixed $value): self
     {
+        $valueStr = \is_scalar($value) || $value instanceof Stringable
+            ? (string) $value
+            : get_debug_type($value);
+
         return new self(\sprintf(
             'Value "%s" is not valid for enum %s',
-            (string) $value,
+            $valueStr,
             $enumClass,
         ));
     }

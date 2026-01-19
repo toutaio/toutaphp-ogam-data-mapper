@@ -82,9 +82,11 @@ final class BatchExecutor extends BaseExecutor
         }
 
         // Bind and add to batch
-        if ($this->currentStatement !== null) {
-            $this->bindParameters($this->currentStatement, $boundSql, $parameter);
-            $this->currentStatement->execute();
+        $stmt = $this->currentStatement;
+
+        if ($stmt !== null) {
+            $this->bindParameters($stmt, $boundSql, $parameter);
+            $stmt->execute();
         }
 
         // Return a placeholder; actual counts are returned by flushStatements()

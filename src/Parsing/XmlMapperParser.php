@@ -13,7 +13,6 @@ use Touta\Ogam\Configuration;
 use Touta\Ogam\Mapping\Association;
 use Touta\Ogam\Mapping\Collection;
 use Touta\Ogam\Mapping\Discriminator;
-use Touta\Ogam\Mapping\FetchType;
 use Touta\Ogam\Mapping\Hydration;
 use Touta\Ogam\Mapping\MappedStatement;
 use Touta\Ogam\Mapping\ResultMap;
@@ -166,7 +165,6 @@ final class XmlMapperParser
             $element->getAttribute('property'),
             $element->getAttribute('column'),
             $element->getAttribute('phpType') ?: null,
-            $element->getAttribute('sqlType') ?: null,
             $element->getAttribute('typeHandler') ?: null,
         );
     }
@@ -174,53 +172,61 @@ final class XmlMapperParser
     private function parseAssociation(DOMElement $element, string $namespace): Association
     {
         $property = $element->getAttribute('property');
-        $column = $element->getAttribute('column') ?: null;
         $phpType = $this->configuration->resolveTypeAlias($element->getAttribute('phpType') ?: '');
         $resultMapId = $element->getAttribute('resultMap') ?: null;
-        $fetchType = $this->parseFetchType($element->getAttribute('fetchType'));
+        $columnPrefix = $element->getAttribute('columnPrefix') ?: '';
 
         // Check for nested result map
-        $nestedResultMappings = [];
+        $idMappings = [];
+        $resultMappings = [];
 
         foreach ($element->childNodes as $child) {
-            if ($child instanceof DOMElement && ($child->nodeName === 'id' || $child->nodeName === 'result')) {
-                $nestedResultMappings[] = $this->parseResultMapping($child);
+            if ($child instanceof DOMElement) {
+                if ($child->nodeName === 'id') {
+                    $idMappings[] = $this->parseResultMapping($child);
+                } elseif ($child->nodeName === 'result') {
+                    $resultMappings[] = $this->parseResultMapping($child);
+                }
             }
         }
 
         return new Association(
             $property,
-            $column,
-            $phpType !== '' ? $phpType : null,
+            $phpType !== '' ? $phpType : 'object',
             $resultMapId !== null ? ($namespace . '.' . $resultMapId) : null,
-            $fetchType,
-            $nestedResultMappings,
+            $columnPrefix,
+            $idMappings,
+            $resultMappings,
         );
     }
 
     private function parseCollection(DOMElement $element, string $namespace): Collection
     {
         $property = $element->getAttribute('property');
-        $column = $element->getAttribute('column') ?: null;
         $ofType = $this->configuration->resolveTypeAlias($element->getAttribute('ofType') ?: '');
         $resultMapId = $element->getAttribute('resultMap') ?: null;
-        $fetchType = $this->parseFetchType($element->getAttribute('fetchType'));
+        $columnPrefix = $element->getAttribute('columnPrefix') ?: '';
 
-        $nestedResultMappings = [];
+        $idMappings = [];
+        $resultMappings = [];
 
         foreach ($element->childNodes as $child) {
-            if ($child instanceof DOMElement && ($child->nodeName === 'id' || $child->nodeName === 'result')) {
-                $nestedResultMappings[] = $this->parseResultMapping($child);
+            if ($child instanceof DOMElement) {
+                if ($child->nodeName === 'id') {
+                    $idMappings[] = $this->parseResultMapping($child);
+                } elseif ($child->nodeName === 'result') {
+                    $resultMappings[] = $this->parseResultMapping($child);
+                }
             }
         }
 
         return new Collection(
             $property,
-            $column,
-            $ofType !== '' ? $ofType : null,
+            $ofType !== '' ? $ofType : 'object',
             $resultMapId !== null ? ($namespace . '.' . $resultMapId) : null,
-            $fetchType,
-            $nestedResultMappings,
+            $columnPrefix,
+            $idMappings,
+            $resultMappings,
         );
     }
 
@@ -237,15 +243,7 @@ final class XmlMapperParser
             $cases[$value] = $namespace . '.' . $resultMapId;
         }
 
-        return new Discriminator($column, $cases, $phpType);
-    }
-
-    private function parseFetchType(string $value): FetchType
-    {
-        return match (strtolower($value)) {
-            'lazy' => FetchType::LAZY,
-            default => FetchType::EAGER,
-        };
+        return new Discriminator($column, $phpType, $cases);
     }
 
     private function parseStatements(DOMElement $mapper, string $namespace): void

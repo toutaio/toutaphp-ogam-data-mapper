@@ -21,10 +21,18 @@ final class DynamicContext
 
     private int $uniqueNumber = 0;
 
+    /** @var array<string, mixed>|object|null */
+    private readonly array|object|null $parameter;
+
+    /**
+     * @param array<string, mixed>|object|null $parameter
+     */
     public function __construct(
         private readonly Configuration $configuration,
-        private readonly array|object|null $parameter,
-    ) {}
+        array|object|null $parameter,
+    ) {
+        $this->parameter = $parameter;
+    }
 
     public function appendSql(string $sql): void
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Touta\Ogam\Sql;
 
 use ReflectionProperty;
+use Stringable;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\ParameterMapping;
@@ -37,8 +38,11 @@ final class SqlSourceBuilder
     /x';
 
     public function __construct(
-        private readonly Configuration $configuration,
-    ) {}
+        Configuration $configuration,
+    ) {
+        // Configuration stored for future use (e.g., type handler resolution)
+        $_ = $configuration;
+    }
 
     /**
      * @param array<string, mixed>|object|null $parameter
@@ -74,7 +78,11 @@ final class SqlSourceBuilder
                 $value = $this->getPropertyValue($parameter, $property);
 
                 // Direct string substitution (be careful - SQL injection risk)
-                return $value !== null ? (string) $value : '';
+                if ($value === null) {
+                    return '';
+                }
+
+                return \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
             },
             $sql,
         );
@@ -112,6 +120,10 @@ final class SqlSourceBuilder
     {
         $result = [];
         $pairs = preg_split('/\s*,\s*/', trim($attrs));
+
+        if ($pairs === false) {
+            return $result;
+        }
 
         foreach ($pairs as $pair) {
             if (preg_match('/^(\w+)\s*=\s*(.+)$/', trim($pair), $m)) {

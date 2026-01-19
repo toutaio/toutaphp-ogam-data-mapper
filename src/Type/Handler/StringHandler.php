@@ -6,6 +6,7 @@ namespace Touta\Ogam\Type\Handler;
 
 use PDO;
 use PDOStatement;
+use Stringable;
 use Touta\Ogam\Type\BaseTypeHandler;
 
 /**
@@ -13,7 +14,7 @@ use Touta\Ogam\Type\BaseTypeHandler;
  */
 final class StringHandler extends BaseTypeHandler
 {
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return 'string';
     }
@@ -24,11 +25,12 @@ final class StringHandler extends BaseTypeHandler
         mixed $value,
         ?string $sqlType,
     ): void {
-        $statement->bindValue($index, (string) $value, PDO::PARAM_STR);
+        $strValue = \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
+        $statement->bindValue($index, $strValue, PDO::PARAM_STR);
     }
 
     protected function getNonNullResult(mixed $value): string
     {
-        return (string) $value;
+        return \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
     }
 }

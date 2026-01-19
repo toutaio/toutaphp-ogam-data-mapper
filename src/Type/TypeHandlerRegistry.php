@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Type;
 
-use BackedEnum;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -99,11 +98,11 @@ final class TypeHandlerRegistry
 
         // Handle specific object types
         if (\is_object($value)) {
-            $class = $value::class;
-
-            if ($value instanceof BackedEnum || $value instanceof UnitEnum) {
-                return $this->getEnumHandler($class);
+            if ($value instanceof UnitEnum) {
+                return $this->getEnumHandler($value::class);
             }
+
+            $class = $value::class;
 
             if ($value instanceof DateTimeImmutable) {
                 return $this->handlers[strtolower(DateTimeImmutable::class)]
@@ -174,7 +173,7 @@ final class TypeHandlerRegistry
     /**
      * Get or create an enum handler for the given enum class.
      *
-     * @param class-string $enumClass The enum class name
+     * @param class-string<UnitEnum> $enumClass The enum class name
      */
     private function getEnumHandler(string $enumClass): TypeHandlerInterface
     {

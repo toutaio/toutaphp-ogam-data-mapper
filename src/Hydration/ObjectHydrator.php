@@ -45,15 +45,16 @@ final class ObjectHydrator implements HydratorInterface
             return $row;
         }
 
-        $type = $resultType ?? $resultMap?->getType();
+        $type = $resultType ?? ($resultMap !== null ? $resultMap->getType() : null);
 
-        if ($type === null) {
+        if ($type === null || !class_exists($type)) {
             return $row;
         }
 
         // Map columns to properties
         $propertyValues = $this->mapRowToProperties($row, $resultMap);
 
+        /** @var class-string $type */
         return $this->createObject($type, $propertyValues);
     }
 

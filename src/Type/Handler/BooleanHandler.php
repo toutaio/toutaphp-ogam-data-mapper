@@ -13,7 +13,7 @@ use Touta\Ogam\Type\BaseTypeHandler;
  */
 final class BooleanHandler extends BaseTypeHandler
 {
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return 'bool';
     }

@@ -90,7 +90,10 @@ final class DefaultSession implements SessionInterface
 
         foreach ($results as $result) {
             $key = $this->extractMapKey($result, $mapKey);
-            $map[$key] = $result;
+
+            if (\is_int($key) || \is_string($key)) {
+                $map[$key] = $result;
+            }
         }
 
         return $map;
@@ -138,6 +141,13 @@ final class DefaultSession implements SessionInterface
         $this->dirty = false;
     }
 
+    /**
+     * @template T of object
+     *
+     * @param class-string<T> $mapperInterface
+     *
+     * @return T
+     */
     public function getMapper(string $mapperInterface): object
     {
         $this->assertNotClosed();
@@ -150,6 +160,7 @@ final class DefaultSession implements SessionInterface
             );
         }
 
+        /** @var T */
         return $this->mapperCache[$mapperInterface];
     }
 
@@ -180,6 +191,9 @@ final class DefaultSession implements SessionInterface
         return $this->executor->getLastQuery();
     }
 
+    /**
+     * @param array<string, mixed>|object|null $parameter
+     */
     private function executeUpdate(
         string $statement,
         array|object|null $parameter,

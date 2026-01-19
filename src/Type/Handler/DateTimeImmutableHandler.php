@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use PDO;
 use PDOStatement;
+use Stringable;
 use Touta\Ogam\Type\BaseTypeHandler;
 
 /**
@@ -21,7 +22,7 @@ final class DateTimeImmutableHandler extends BaseTypeHandler
         private readonly string $format = self::DEFAULT_FORMAT,
     ) {}
 
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return DateTimeImmutable::class;
     }
@@ -35,7 +36,7 @@ final class DateTimeImmutableHandler extends BaseTypeHandler
         if ($value instanceof DateTimeInterface) {
             $formatted = $value->format($this->format);
         } else {
-            $formatted = (string) $value;
+            $formatted = \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
         }
 
         $statement->bindValue($index, $formatted, PDO::PARAM_STR);
@@ -52,11 +53,12 @@ final class DateTimeImmutableHandler extends BaseTypeHandler
         }
 
         // Try parsing as string
-        $dateTime = DateTimeImmutable::createFromFormat($this->format, (string) $value);
+        $stringValue = \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
+        $dateTime = DateTimeImmutable::createFromFormat($this->format, $stringValue);
 
         if ($dateTime === false) {
             // Fall back to natural parsing
-            $dateTime = new DateTimeImmutable((string) $value);
+            $dateTime = new DateTimeImmutable($stringValue);
         }
 
         return $dateTime;

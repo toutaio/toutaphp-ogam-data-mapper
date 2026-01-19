@@ -125,8 +125,14 @@ final class MapperProxy
         if (\count($params) === 1 && \count($arguments) === 1) {
             $arg = $arguments[0];
 
-            // Single object or array parameter
-            if (\is_object($arg) || \is_array($arg)) {
+            // Single object parameter
+            if (\is_object($arg)) {
+                return $arg;
+            }
+
+            // Single array parameter - ensure string keys
+            if (\is_array($arg)) {
+                /** @var array<string, mixed> $arg */
                 return $arg;
             }
         }

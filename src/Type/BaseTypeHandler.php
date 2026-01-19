@@ -49,7 +49,7 @@ abstract class BaseTypeHandler implements TypeHandlerInterface
     {
         $values = array_values($row);
 
-        if (!isset($values[$columnIndex])) {
+        if (!\array_key_exists($columnIndex, $values)) {
             return null;
         }
 

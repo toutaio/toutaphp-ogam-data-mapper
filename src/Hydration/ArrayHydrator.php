@@ -22,6 +22,9 @@ final class ArrayHydrator implements HydratorInterface
         private readonly bool $mapUnderscoreToCamelCase = false,
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function hydrate(array $row, ?ResultMap $resultMap, ?string $resultType): array
     {
         if ($resultMap === null) {

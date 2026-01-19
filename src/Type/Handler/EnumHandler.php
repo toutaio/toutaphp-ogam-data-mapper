@@ -32,7 +32,7 @@ final class EnumHandler extends BaseTypeHandler
         }
     }
 
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return $this->enumClass;
     }
@@ -71,14 +71,26 @@ final class EnumHandler extends BaseTypeHandler
 
         // For backed enums, use from() or tryFrom()
         if (is_subclass_of($enumClass, BackedEnum::class)) {
+            if (!\is_int($value) && !\is_string($value)) {
+                throw new ValueError(
+                    \sprintf(
+                        'Value of type "%s" is not valid for backed enum %s',
+                        get_debug_type($value),
+                        $enumClass,
+                    ),
+                );
+            }
+
             /** @var class-string<BackedEnum&T> $enumClass */
             $enum = $enumClass::tryFrom($value);
 
             if ($enum === null) {
+                $valueStr = (string) $value;
+
                 throw new ValueError(
                     \sprintf(
                         'Value "%s" is not a valid backing value for enum %s',
-                        $value,
+                        $valueStr,
                         $enumClass,
                     ),
                 );
@@ -88,8 +100,10 @@ final class EnumHandler extends BaseTypeHandler
         }
 
         // For unit enums, match by name
+        $valueName = \is_scalar($value) ? (string) $value : '';
+
         foreach ($enumClass::cases() as $case) {
-            if ($case->name === $value) {
+            if ($case->name === $valueName) {
                 return $case;
             }
         }
@@ -97,7 +111,7 @@ final class EnumHandler extends BaseTypeHandler
         throw new ValueError(
             \sprintf(
                 'Value "%s" is not a valid case name for enum %s',
-                $value,
+                $valueName,
                 $enumClass,
             ),
         );

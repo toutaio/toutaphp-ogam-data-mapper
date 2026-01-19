@@ -173,7 +173,10 @@ final class XmlConfigurationParser
 
             if ($phpType !== '' && $handlerClass !== '' && class_exists($handlerClass)) {
                 $handlerInstance = new $handlerClass();
-                $this->configuration->addTypeHandler($phpType, $handlerInstance);
+
+                if ($handlerInstance instanceof \Touta\Ogam\Contract\TypeHandlerInterface) {
+                    $this->configuration->addTypeHandler($phpType, $handlerInstance);
+                }
             }
         }
     }
@@ -295,7 +298,8 @@ final class XmlConfigurationParser
 
             $class = $mapper->getAttribute('class');
 
-            if ($class !== '') {
+            if ($class !== '' && (class_exists($class) || interface_exists($class))) {
+                /** @var class-string $class */
                 $this->configuration->addMapper($class);
             }
         }
