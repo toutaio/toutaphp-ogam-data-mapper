@@ -9,4 +9,4 @@ use RuntimeException;
 /**
  * Base exception for all Ogam exceptions.
  */
-final class OgamException extends RuntimeException {}
+class OgamException extends RuntimeException {}

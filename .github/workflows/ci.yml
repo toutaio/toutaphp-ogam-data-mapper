@@ -25,7 +25,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo, pdo_sqlite, pdo_mysql, pdo_pgsql
+          extensions: pdo, pdo_sqlite, pdo_mysql, pdo_pgsql, pcov
           coverage: xdebug
           tools: composer:v2
 
@@ -96,7 +96,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: pdo, pdo_sqlite, pdo_mysql, pdo_pgsql
+          extensions: pdo, pdo_sqlite, pdo_mysql, pdo_pgsql, pcov
           coverage: none
           tools: composer:v2
 

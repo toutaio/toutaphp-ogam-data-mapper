@@ -13,7 +13,7 @@ use Touta\Ogam\Sql\DynamicContext;
  *     content
  * </trim>
  */
-final class TrimSqlNode implements SqlNode
+class TrimSqlNode implements SqlNode
 {
     /** @var list<string> */
     private readonly array $prefixesToOverride;

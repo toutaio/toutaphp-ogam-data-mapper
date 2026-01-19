@@ -33,7 +33,8 @@ return (new PhpCsFixer\Config())
             ],
         ],
         'declare_strict_types' => true,
-        'final_class' => true,
+        // Disabled: use PHPStan for final class enforcement (supports per-class suppression)
+        // 'final_class' => true,
         'global_namespace_import' => [
             'import_classes' => true,
             'import_constants' => false,
