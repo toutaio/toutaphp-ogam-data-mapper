@@ -1,6 +1,6 @@
 # Touta Ogam - Data Mapper for PHP
 
-[![CI](https://github.com/toutaio/toutaphp-ogam/actions/workflows/ci.yml/badge.svg)](https://github.com/toutaio/toutaphp-ogam/actions/workflows/ci.yml)
+[![CI](https://github.com/toutaio/toutaphp-ogam-data-mapper/actions/workflows/ci.yml/badge.svg)](https://github.com/toutaio/toutaphp-ogam-data-mapper/actions/workflows/ci.yml)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.3-8892BF.svg)](https://php.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

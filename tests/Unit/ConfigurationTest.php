@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Tests\Unit;
 
+use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\DataSource\Environment;
@@ -62,7 +63,7 @@ final class ConfigurationTest extends TestCase
         // Default aliases
         $this->assertSame('string', $this->configuration->resolveTypeAlias('string'));
         $this->assertSame('int', $this->configuration->resolveTypeAlias('integer'));
-        $this->assertSame(\DateTimeInterface::class, $this->configuration->resolveTypeAlias('datetime'));
+        $this->assertSame(DateTimeInterface::class, $this->configuration->resolveTypeAlias('datetime'));
 
         // Custom alias
         $this->configuration->addTypeAlias('user', 'App\\Entity\\User');

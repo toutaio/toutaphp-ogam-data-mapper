@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam;
 
+use RuntimeException;
 use Touta\Ogam\Contract\SessionFactoryInterface;
 use Touta\Ogam\Parsing\XmlConfigurationParser;
 use Touta\Ogam\Session\DefaultSessionFactory;
@@ -93,7 +94,7 @@ final class SessionFactoryBuilder
             return $parser->parseXml($this->configurationXml);
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             'No configuration provided. Call withConfiguration(), withXmlConfiguration(), or withConfigurationObject().',
         );
     }

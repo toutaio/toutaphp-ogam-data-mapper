@@ -47,7 +47,7 @@ final class TrimSqlNode implements SqlNode
 
         $this->contents->apply($childContext);
 
-        $sql = \trim($childContext->getSql());
+        $sql = trim($childContext->getSql());
 
         if ($sql === '') {
             return false;
@@ -91,20 +91,20 @@ final class TrimSqlNode implements SqlNode
             return [];
         }
 
-        return \array_map(
-            static fn (string $s) => \strtoupper(\trim($s)),
-            \explode('|', $overrides),
+        return array_map(
+            static fn(string $s) => strtoupper(trim($s)),
+            explode('|', $overrides),
         );
     }
 
     private function applyPrefixOverrides(string $sql): string
     {
-        $upper = \strtoupper($sql);
+        $upper = strtoupper($sql);
 
         foreach ($this->prefixesToOverride as $override) {
-            if (\str_starts_with($upper, $override)) {
-                $sql = \substr($sql, \strlen($override));
-                $sql = \ltrim($sql);
+            if (str_starts_with($upper, $override)) {
+                $sql = substr($sql, \strlen($override));
+                $sql = ltrim($sql);
 
                 break;
             }
@@ -115,14 +115,14 @@ final class TrimSqlNode implements SqlNode
 
     private function applySuffixOverrides(string $sql): string
     {
-        $upper = \strtoupper($sql);
+        $upper = strtoupper($sql);
 
         foreach ($this->suffixesToOverride as $override) {
-            $trimmedOverride = \rtrim($override);
+            $trimmedOverride = rtrim($override);
 
-            if (\str_ends_with($upper, $trimmedOverride)) {
-                $sql = \substr($sql, 0, -\strlen($trimmedOverride));
-                $sql = \rtrim($sql);
+            if (str_ends_with($upper, $trimmedOverride)) {
+                $sql = substr($sql, 0, -\strlen($trimmedOverride));
+                $sql = rtrim($sql);
 
                 break;
             }

@@ -47,7 +47,7 @@ final class PooledDataSource implements DataSourceInterface
     {
         // Return a pooled connection if available
         if ($this->pool !== []) {
-            return \array_pop($this->pool);
+            return array_pop($this->pool);
         }
 
         // Create a new connection

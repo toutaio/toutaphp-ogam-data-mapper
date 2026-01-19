@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Touta\Ogam;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use Touta\Ogam\Contract\TypeHandlerInterface;
 use Touta\Ogam\DataSource\Environment;
 use Touta\Ogam\Executor\ExecutorType;
@@ -21,12 +23,19 @@ final class Configuration
 {
     // Settings
     private bool $cacheEnabled = true;
+
     private bool $lazyLoadingEnabled = false;
+
     private bool $mapUnderscoreToCamelCase = false;
+
     private ExecutorType $defaultExecutorType = ExecutorType::SIMPLE;
+
     private int $defaultStatementTimeout = 0;
+
     private bool $useGeneratedKeys = false;
+
     private string $defaultEnvironment = 'default';
+
     private bool $debugMode = false;
 
     /** @var array<string, Environment> */
@@ -178,14 +187,14 @@ final class Configuration
 
     public function addTypeAlias(string $alias, string $type): self
     {
-        $this->typeAliases[\strtolower($alias)] = $type;
+        $this->typeAliases[strtolower($alias)] = $type;
 
         return $this;
     }
 
     public function resolveTypeAlias(string $alias): string
     {
-        return $this->typeAliases[\strtolower($alias)] ?? $alias;
+        return $this->typeAliases[strtolower($alias)] ?? $alias;
     }
 
     /**
@@ -303,8 +312,8 @@ final class Configuration
         $this->addTypeAlias('object', 'object');
 
         // Common classes
-        $this->addTypeAlias('date', \DateTimeInterface::class);
-        $this->addTypeAlias('datetime', \DateTimeInterface::class);
-        $this->addTypeAlias('datetimeimmutable', \DateTimeImmutable::class);
+        $this->addTypeAlias('date', DateTimeInterface::class);
+        $this->addTypeAlias('datetime', DateTimeInterface::class);
+        $this->addTypeAlias('datetimeimmutable', DateTimeImmutable::class);
     }
 }

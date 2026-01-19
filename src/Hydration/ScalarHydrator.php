@@ -26,7 +26,7 @@ final class ScalarHydrator implements HydratorInterface
             return null;
         }
 
-        $value = \reset($row);
+        $value = reset($row);
 
         if ($value === null || $resultType === null) {
             return $value;
@@ -50,7 +50,7 @@ final class ScalarHydrator implements HydratorInterface
     private function convertValue(mixed $value, string $resultType): mixed
     {
         // Handle primitive types directly
-        return match (\strtolower($resultType)) {
+        return match (strtolower($resultType)) {
             'int', 'integer' => (int) $value,
             'float', 'double' => (float) $value,
             'string' => (string) $value,

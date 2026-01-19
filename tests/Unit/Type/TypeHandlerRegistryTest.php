@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Tests\Unit\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use Touta\Ogam\Type\Handler\BooleanHandler;
 use Touta\Ogam\Type\Handler\DateTimeHandler;
@@ -35,8 +38,8 @@ final class TypeHandlerRegistryTest extends TestCase
 
     public function testRegistersDateTimeHandlers(): void
     {
-        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(\DateTime::class));
-        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(\DateTimeInterface::class));
+        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(DateTime::class));
+        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(DateTimeInterface::class));
     }
 
     public function testRegistersJsonHandler(): void
@@ -74,8 +77,8 @@ final class TypeHandlerRegistryTest extends TestCase
 
     public function testGetHandlerForDateTime(): void
     {
-        $dateTime = new \DateTime();
-        $dateTimeImmutable = new \DateTimeImmutable();
+        $dateTime = new DateTime();
+        $dateTimeImmutable = new DateTimeImmutable();
 
         $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandlerForValue($dateTime));
     }

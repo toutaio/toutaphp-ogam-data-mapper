@@ -50,7 +50,7 @@ final class BatchExecutor extends BaseExecutor
         // Queries are executed immediately, flushing any pending batch
         $this->flushStatements();
 
-        $startTime = \microtime(true);
+        $startTime = microtime(true);
 
         $stmt = $this->getConnection()->prepare($boundSql->getSql());
         $this->bindParameters($stmt, $boundSql, $parameter);
@@ -110,7 +110,7 @@ final class BatchExecutor extends BaseExecutor
 
     private function getOrPrepareStatement(string $sql): PDOStatement
     {
-        $cacheKey = \hash('xxh3', $sql);
+        $cacheKey = hash('xxh3', $sql);
 
         if (!isset($this->statementCache[$cacheKey])) {
             $this->statementCache[$cacheKey] = $this->getConnection()->prepare($sql);

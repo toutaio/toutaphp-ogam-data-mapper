@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Transaction;
 
+use InvalidArgumentException;
 use PDO;
+use RuntimeException;
 
 /**
  * JDBC-style transaction that commits on close unless autocommit is disabled.
@@ -42,7 +44,7 @@ final class JdbcTransaction implements TransactionInterface
     public function commit(): void
     {
         if ($this->closed) {
-            throw new \RuntimeException('Transaction is already closed');
+            throw new RuntimeException('Transaction is already closed');
         }
 
         if (!$this->autoCommit && $this->connection->inTransaction()) {
@@ -56,7 +58,7 @@ final class JdbcTransaction implements TransactionInterface
     public function rollback(): void
     {
         if ($this->closed) {
-            throw new \RuntimeException('Transaction is already closed');
+            throw new RuntimeException('Transaction is already closed');
         }
 
         if (!$this->autoCommit && $this->connection->inTransaction()) {
@@ -118,7 +120,7 @@ final class JdbcTransaction implements TransactionInterface
             2 => 'READ COMMITTED',
             4 => 'REPEATABLE READ',
             8 => 'SERIALIZABLE',
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 \sprintf('Invalid isolation level: %d', $level),
             ),
         };

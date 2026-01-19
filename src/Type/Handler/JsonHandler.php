@@ -43,7 +43,7 @@ final class JsonHandler extends BaseTypeHandler
             // Already JSON string
             $json = $value;
         } else {
-            $json = \json_encode($value, $this->encodeFlags, $this->depth);
+            $json = json_encode($value, $this->encodeFlags, $this->depth);
         }
 
         $statement->bindValue($index, $json, PDO::PARAM_STR);
@@ -60,6 +60,6 @@ final class JsonHandler extends BaseTypeHandler
             return $value;
         }
 
-        return \json_decode($value, $this->associative, $this->depth, $this->decodeFlags);
+        return json_decode($value, $this->associative, $this->depth, $this->decodeFlags);
     }
 }

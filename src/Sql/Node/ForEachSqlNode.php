@@ -29,11 +29,11 @@ final class ForEachSqlNode implements SqlNode
     {
         $iterable = $context->evaluate($this->collection);
 
-        if (!\is_iterable($iterable)) {
+        if (!is_iterable($iterable)) {
             return false;
         }
 
-        $items = \is_array($iterable) ? $iterable : \iterator_to_array($iterable);
+        $items = \is_array($iterable) ? $iterable : iterator_to_array($iterable);
 
         if ($items === []) {
             return false;
@@ -50,14 +50,47 @@ final class ForEachSqlNode implements SqlNode
 
             $first = false;
 
-            // Bind the item and index
-            $context->bind($this->item, $value);
+            // Generate unique parameter names for this iteration
+            $uniqueNum = $context->getUniqueNumber();
+            $itemKey = "__frch_{$this->item}_{$uniqueNum}";
+            $indexKey = $this->index !== null ? "__frch_{$this->index}_{$uniqueNum}" : null;
 
-            if ($this->index !== null) {
-                $context->bind($this->index, $key);
+            // Bind with unique names
+            $context->bind($itemKey, $value);
+
+            if ($indexKey !== null) {
+                $context->bind($indexKey, $key);
             }
 
-            $this->contents->apply($context);
+            // Create a child context to capture content SQL
+            $childContext = new DynamicContext(
+                $context->getConfiguration(),
+                $context->getParameter(),
+            );
+
+            // Copy bindings to child
+            foreach ($context->getBindings() as $name => $val) {
+                $childContext->bind($name, $val);
+            }
+
+            // Bind the original item name for the content evaluation
+            $childContext->bind($this->item, $value);
+
+            if ($this->index !== null) {
+                $childContext->bind($this->index, $key);
+            }
+
+            $this->contents->apply($childContext);
+
+            // Get the content SQL and replace #{item} with #{uniqueItemKey}
+            $contentSql = $childContext->getSql();
+            $contentSql = str_replace('#{' . $this->item . '}', '#{' . $itemKey . '}', $contentSql);
+
+            if ($this->index !== null) {
+                $contentSql = str_replace('#{' . $this->index . '}', '#{' . $indexKey . '}', $contentSql);
+            }
+
+            $context->appendSql($contentSql);
         }
 
         $context->appendSql($this->close);

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Touta\Ogam\Session;
 
 use Generator;
-use PDO;
+use InvalidArgumentException;
+use ReflectionProperty;
+use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\ExecutorInterface;
 use Touta\Ogam\Contract\SessionInterface;
@@ -47,7 +49,7 @@ final class DefaultSession implements SessionInterface
         }
 
         if (\count($results) > 1) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 \sprintf(
                     'Expected one result (or null) to be returned by selectOne(), but found: %d',
                     \count($results),
@@ -200,7 +202,7 @@ final class DefaultSession implements SessionInterface
         $statement = $this->configuration->getMappedStatement($id);
 
         if ($statement === null) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 \sprintf('Mapped statement "%s" not found', $id),
             );
         }
@@ -223,7 +225,7 @@ final class DefaultSession implements SessionInterface
             return;
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             \sprintf(
                 'Statement "%s" is a %s statement, but was used as %s',
                 $statement->getFullId(),
@@ -251,27 +253,27 @@ final class DefaultSession implements SessionInterface
     private function extractMapKey(mixed $result, string $mapKey): mixed
     {
         if (\is_array($result)) {
-            return $result[$mapKey] ?? throw new \RuntimeException(
+            return $result[$mapKey] ?? throw new RuntimeException(
                 \sprintf('Map key "%s" not found in result array', $mapKey),
             );
         }
 
         if (\is_object($result)) {
-            $getter = 'get' . \ucfirst($mapKey);
+            $getter = 'get' . ucfirst($mapKey);
 
-            if (\method_exists($result, $getter)) {
+            if (method_exists($result, $getter)) {
                 return $result->{$getter}();
             }
 
-            if (\property_exists($result, $mapKey)) {
-                $reflection = new \ReflectionProperty($result, $mapKey);
+            if (property_exists($result, $mapKey)) {
+                $reflection = new ReflectionProperty($result, $mapKey);
                 $reflection->setAccessible(true);
 
                 return $reflection->getValue($result);
             }
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             \sprintf('Cannot extract map key "%s" from result', $mapKey),
         );
     }
@@ -319,7 +321,7 @@ final class DefaultSession implements SessionInterface
     private function assertNotClosed(): void
     {
         if ($this->closed) {
-            throw new \RuntimeException('Session is closed');
+            throw new RuntimeException('Session is closed');
         }
     }
 }

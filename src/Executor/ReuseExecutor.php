@@ -6,6 +6,7 @@ namespace Touta\Ogam\Executor;
 
 use PDO;
 use PDOStatement;
+use ReflectionProperty;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\MappedStatement;
@@ -39,7 +40,7 @@ final class ReuseExecutor extends BaseExecutor
         array|object|null $parameter,
         BoundSql $boundSql,
     ): array {
-        $startTime = \microtime(true);
+        $startTime = microtime(true);
 
         $stmt = $this->getOrPrepareStatement($boundSql);
         $this->bindParameters($stmt, $boundSql, $parameter);
@@ -58,7 +59,7 @@ final class ReuseExecutor extends BaseExecutor
         array|object|null $parameter,
         BoundSql $boundSql,
     ): int {
-        $startTime = \microtime(true);
+        $startTime = microtime(true);
 
         $stmt = $this->getOrPrepareStatement($boundSql);
         $this->bindParameters($stmt, $boundSql, $parameter);
@@ -83,7 +84,7 @@ final class ReuseExecutor extends BaseExecutor
     private function getOrPrepareStatement(BoundSql $boundSql): PDOStatement
     {
         $sql = $boundSql->getSql();
-        $cacheKey = \hash('xxh3', $sql);
+        $cacheKey = hash('xxh3', $sql);
 
         if (!isset($this->statementCache[$cacheKey])) {
             $this->statementCache[$cacheKey] = $this->getConnection()->prepare($sql);
@@ -121,17 +122,17 @@ final class ReuseExecutor extends BaseExecutor
         }
 
         // Set on object
-        $setter = 'set' . \ucfirst($keyProperty);
+        $setter = 'set' . ucfirst($keyProperty);
 
-        if (\method_exists($parameter, $setter)) {
+        if (method_exists($parameter, $setter)) {
             $parameter->{$setter}($generatedId);
 
             return;
         }
 
         // Try direct property
-        if (\property_exists($parameter, $keyProperty)) {
-            $reflection = new \ReflectionProperty($parameter, $keyProperty);
+        if (property_exists($parameter, $keyProperty)) {
+            $reflection = new ReflectionProperty($parameter, $keyProperty);
 
             if (!$reflection->isReadOnly()) {
                 $reflection->setAccessible(true);

@@ -7,6 +7,8 @@ namespace Touta\Ogam\Parsing;
 use DOMDocument;
 use DOMElement;
 use DOMNode;
+use DOMText;
+use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Mapping\Association;
 use Touta\Ogam\Mapping\Collection;
@@ -50,13 +52,13 @@ final class XmlMapperParser
         $mapper = $xml->documentElement;
 
         if ($mapper === null || $mapper->nodeName !== 'mapper') {
-            throw new \RuntimeException('Invalid mapper file: root element must be <mapper>');
+            throw new RuntimeException('Invalid mapper file: root element must be <mapper>');
         }
 
         $namespace = $mapper->getAttribute('namespace');
 
         if ($namespace === '') {
-            throw new \RuntimeException('Mapper must have a namespace attribute');
+            throw new RuntimeException('Mapper must have a namespace attribute');
         }
 
         // Parse result maps first
@@ -77,19 +79,19 @@ final class XmlMapperParser
         $doc->preserveWhiteSpace = false;
 
         if (!@$doc->loadXML($xml)) {
-            throw new \RuntimeException('Failed to parse XML');
+            throw new RuntimeException('Failed to parse XML');
         }
 
         $mapper = $doc->documentElement;
 
         if ($mapper === null || $mapper->nodeName !== 'mapper') {
-            throw new \RuntimeException('Invalid mapper: root element must be <mapper>');
+            throw new RuntimeException('Invalid mapper: root element must be <mapper>');
         }
 
         $namespace = $mapper->getAttribute('namespace');
 
         if ($namespace === '') {
-            throw new \RuntimeException('Mapper must have a namespace attribute');
+            throw new RuntimeException('Mapper must have a namespace attribute');
         }
 
         foreach ($this->getChildElements($mapper, 'resultMap') as $element) {
@@ -101,15 +103,15 @@ final class XmlMapperParser
 
     private function loadXml(string $path): DOMDocument
     {
-        if (!\file_exists($path)) {
-            throw new \RuntimeException(\sprintf('Mapper file not found: %s', $path));
+        if (!file_exists($path)) {
+            throw new RuntimeException(\sprintf('Mapper file not found: %s', $path));
         }
 
         $xml = new DOMDocument();
         $xml->preserveWhiteSpace = false;
 
         if (!@$xml->load($path)) {
-            throw new \RuntimeException(\sprintf('Failed to parse mapper file: %s', $path));
+            throw new RuntimeException(\sprintf('Failed to parse mapper file: %s', $path));
         }
 
         return $xml;
@@ -240,7 +242,7 @@ final class XmlMapperParser
 
     private function parseFetchType(string $value): FetchType
     {
-        return match (\strtolower($value)) {
+        return match (strtolower($value)) {
             'lazy' => FetchType::LAZY,
             default => FetchType::EAGER,
         };
@@ -313,7 +315,7 @@ final class XmlMapperParser
             return null;
         }
 
-        return match (\strtolower($value)) {
+        return match (strtolower($value)) {
             'array' => Hydration::ARRAY,
             'scalar' => Hydration::SCALAR,
             default => Hydration::OBJECT,
@@ -348,8 +350,8 @@ final class XmlMapperParser
 
     private function parseNode(DOMNode $node): ?SqlNode
     {
-        if ($node instanceof \DOMText) {
-            $text = \trim($node->textContent);
+        if ($node instanceof DOMText) {
+            $text = trim($node->textContent);
 
             if ($text === '') {
                 return null;

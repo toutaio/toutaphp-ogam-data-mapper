@@ -6,6 +6,10 @@ namespace Touta\Ogam\Executor;
 
 use PDO;
 use PDOStatement;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionProperty;
+use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\ExecutorInterface;
 use Touta\Ogam\Hydration\HydratorFactory;
@@ -205,6 +209,14 @@ abstract class BaseExecutor implements ExecutorInterface
         array|object|null $parameter,
     ): void {
         $parameterValues = $this->extractParameterValues($parameter);
+
+        // Merge additional parameters from BoundSql (e.g., from foreach bindings)
+        $additionalParams = $boundSql->getAdditionalParameters();
+
+        if ($additionalParams !== []) {
+            $parameterValues = array_merge($parameterValues, $additionalParams);
+        }
+
         $registry = $this->configuration->getTypeHandlerRegistry();
 
         foreach ($boundSql->getParameterMappings() as $index => $mapping) {
@@ -237,7 +249,7 @@ abstract class BaseExecutor implements ExecutorInterface
 
         // Convert object to array
         $values = [];
-        $reflection = new \ReflectionClass($parameter);
+        $reflection = new ReflectionClass($parameter);
 
         foreach ($reflection->getProperties() as $prop) {
             $prop->setAccessible(true);
@@ -245,19 +257,19 @@ abstract class BaseExecutor implements ExecutorInterface
         }
 
         // Also include getter methods
-        foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $name = $method->getName();
 
-            if (\str_starts_with($name, 'get') && $method->getNumberOfRequiredParameters() === 0) {
-                $property = \lcfirst(\substr($name, 3));
+            if (str_starts_with($name, 'get') && $method->getNumberOfRequiredParameters() === 0) {
+                $property = lcfirst(substr($name, 3));
 
                 if (!isset($values[$property])) {
                     $values[$property] = $method->invoke($parameter);
                 }
             }
 
-            if (\str_starts_with($name, 'is') && $method->getNumberOfRequiredParameters() === 0) {
-                $property = \lcfirst(\substr($name, 2));
+            if (str_starts_with($name, 'is') && $method->getNumberOfRequiredParameters() === 0) {
+                $property = lcfirst(substr($name, 2));
 
                 if (!isset($values[$property])) {
                     $values[$property] = $method->invoke($parameter);
@@ -276,7 +288,7 @@ abstract class BaseExecutor implements ExecutorInterface
         $property = $mapping->getProperty();
 
         // Handle nested properties (e.g., 'user.name')
-        if (\str_contains($property, '.')) {
+        if (str_contains($property, '.')) {
             return $this->getNestedValue($parameterValues, $property);
         }
 
@@ -288,7 +300,7 @@ abstract class BaseExecutor implements ExecutorInterface
      */
     protected function getNestedValue(array $values, string $path): mixed
     {
-        $parts = \explode('.', $path);
+        $parts = explode('.', $path);
         $current = $values;
 
         foreach ($parts as $part) {
@@ -307,22 +319,22 @@ abstract class BaseExecutor implements ExecutorInterface
     protected function getObjectProperty(object $object, string $property): mixed
     {
         // Try getter first
-        $getter = 'get' . \ucfirst($property);
+        $getter = 'get' . ucfirst($property);
 
-        if (\method_exists($object, $getter)) {
+        if (method_exists($object, $getter)) {
             return $object->{$getter}();
         }
 
         // Try boolean getter
-        $isGetter = 'is' . \ucfirst($property);
+        $isGetter = 'is' . ucfirst($property);
 
-        if (\method_exists($object, $isGetter)) {
+        if (method_exists($object, $isGetter)) {
             return $object->{$isGetter}();
         }
 
         // Try direct property access
-        if (\property_exists($object, $property)) {
-            $reflection = new \ReflectionProperty($object, $property);
+        if (property_exists($object, $property)) {
+            $reflection = new ReflectionProperty($object, $property);
             $reflection->setAccessible(true);
 
             return $reflection->getValue($object);
@@ -345,7 +357,7 @@ abstract class BaseExecutor implements ExecutorInterface
             'params' => $this->extractParameterValues($parameter),
         ];
 
-        return \hash('xxh3', \serialize($data));
+        return hash('xxh3', serialize($data));
     }
 
     /**
@@ -372,7 +384,7 @@ abstract class BaseExecutor implements ExecutorInterface
     protected function assertNotClosed(): void
     {
         if ($this->closed) {
-            throw new \RuntimeException('Executor is closed');
+            throw new RuntimeException('Executor is closed');
         }
     }
 
@@ -384,7 +396,7 @@ abstract class BaseExecutor implements ExecutorInterface
         $this->lastQuery = [
             'sql' => $boundSql->getSql(),
             'params' => $this->extractParameterValues($parameter),
-            'time' => \microtime(true) - $startTime,
+            'time' => microtime(true) - $startTime,
         ];
     }
 }
