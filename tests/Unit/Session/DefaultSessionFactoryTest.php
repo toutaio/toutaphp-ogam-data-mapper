@@ -14,29 +14,30 @@ use Touta\Ogam\DataSource\Environment;
 use Touta\Ogam\Executor\ExecutorType;
 use Touta\Ogam\Session\DefaultSession;
 use Touta\Ogam\Session\DefaultSessionFactory;
-use Touta\Ogam\Transaction\TransactionInterface;
 use Touta\Ogam\Transaction\TransactionFactory;
+use Touta\Ogam\Transaction\TransactionInterface;
 
 final class DefaultSessionFactoryTest extends TestCase
 {
     private Configuration $configuration;
+
     private DefaultSessionFactory $sessionFactory;
 
     protected function setUp(): void
     {
         $this->configuration = new Configuration();
-        
+
         // Set up a test environment
         $dataSource = $this->createMock(DataSourceInterface::class);
         $transactionFactory = $this->createMock(TransactionFactory::class);
         $pdo = new PDO('sqlite::memory:');
-        
+
         $dataSource->method('getConnection')->willReturn($pdo);
-        
+
         $environment = new Environment('test', $dataSource, $transactionFactory);
         $this->configuration->addEnvironment($environment);
         $this->configuration->setDefaultEnvironment('test');
-        
+
         $this->sessionFactory = new DefaultSessionFactory($this->configuration);
     }
 
@@ -49,7 +50,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionCreatesSessionWithDefaultSettings(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -64,7 +65,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionWithAutoCommitCreatesSessionWithAutoCommit(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -78,7 +79,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionWithExecutorCreatesSessionWithSpecificExecutor(): void
     {
-        
+
 
         // Configuration method getEnvironment will return default
 
@@ -90,7 +91,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionCreatesSimpleExecutor(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -104,7 +105,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionCreatesReuseExecutor(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -117,7 +118,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionCreatesBatchExecutor(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -130,7 +131,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionWithExecutorOverridesDefaultExecutorType(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -198,7 +199,7 @@ final class DefaultSessionFactoryTest extends TestCase
             ->willReturn($transaction);
 
         $environment = new Environment('custom', $dataSource, $transactionFactory);
-        
+
         // Create a new configuration and factory with this environment
         $config = new Configuration();
         $config->addEnvironment($environment);
@@ -214,7 +215,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionWithDifferentExecutorTypes(): void
     {
-        
+
 
         // Configuration method getEnvironment will return default
 
@@ -252,7 +253,7 @@ final class DefaultSessionFactoryTest extends TestCase
             ->willReturn($transaction);
 
         $environment = new Environment('custom', $dataSource, $transactionFactory);
-        
+
         // Create a new configuration and factory with this environment
         $config = new Configuration();
         $config->addEnvironment($environment);
@@ -282,7 +283,7 @@ final class DefaultSessionFactoryTest extends TestCase
             ->willReturn($transaction);
 
         $environment = new Environment('custom', $dataSource, $transactionFactory);
-        
+
         // Create a new configuration and factory with this environment
         $config = new Configuration();
         $config->addEnvironment($environment);
@@ -296,7 +297,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testFactoryCanCreateMultipleSessionsSimultaneously(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -320,7 +321,7 @@ final class DefaultSessionFactoryTest extends TestCase
 
     public function testOpenSessionDoesNotAutoCommitByDefault(): void
     {
-        
+
 
         // Configuration method getDefaultExecutorType will return default
 
@@ -341,7 +342,7 @@ final class DefaultSessionFactoryTest extends TestCase
     }
 
     /**
-     * Helper method to create a test environment
+     * Helper method to create a test environment.
      */
     private function createTestEnvironment(): Environment
     {

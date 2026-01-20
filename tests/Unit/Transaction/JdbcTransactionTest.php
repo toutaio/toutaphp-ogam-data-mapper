@@ -188,4 +188,37 @@ final class JdbcTransactionTest extends TestCase
 
         $this->assertFalse($this->connection->inTransaction());
     }
+
+    public function testConstructorWithIsolationLevel(): void
+    {
+        // SQLite doesn't support SET TRANSACTION ISOLATION LEVEL
+        $this->markTestSkipped('SQLite does not support SET TRANSACTION ISOLATION LEVEL');
+
+        $transaction = new JdbcTransaction($this->connection, 2, false);
+
+        $this->assertEquals(2, $transaction->getIsolationLevel());
+        $transaction->close();
+    }
+
+    public function testCommitWhenNotInTransactionIsNoop(): void
+    {
+        $transaction = new JdbcTransaction($this->connection, null, false);
+        $transaction->commit(); // Commit first transaction
+
+        $transaction->commit(); // Should start and commit new transaction
+
+        $this->assertTrue($this->connection->inTransaction());
+        $transaction->close();
+    }
+
+    public function testRollbackWhenNotInTransactionIsNoop(): void
+    {
+        $transaction = new JdbcTransaction($this->connection, null, false);
+        $transaction->rollback(); // Rollback first transaction
+
+        $transaction->rollback(); // Should start and rollback new transaction
+
+        $this->assertTrue($this->connection->inTransaction());
+        $transaction->close();
+    }
 }

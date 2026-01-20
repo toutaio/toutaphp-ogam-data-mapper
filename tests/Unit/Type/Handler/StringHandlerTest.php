@@ -86,7 +86,7 @@ final class StringHandlerTest extends TestCase
 
     public function testSetParameterWithStringable(): void
     {
-        $stringable = new class() implements Stringable {
+        $stringable = new class implements Stringable {
             public function __toString(): string
             {
                 return 'stringable value';
@@ -179,7 +179,7 @@ final class StringHandlerTest extends TestCase
 
     public function testGetResultWithStringable(): void
     {
-        $stringable = new class() implements Stringable {
+        $stringable = new class implements Stringable {
             public function __toString(): string
             {
                 return 'stringable result';

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Tests\Unit\Transaction;
 
+use InvalidArgumentException;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -158,5 +159,25 @@ final class TransactionTest extends TestCase
         $this->assertTrue($this->connection->inTransaction());
         $transaction->commit();
         $this->assertFalse($this->connection->inTransaction());
+    }
+
+    public function testConstructorWithIsolationLevel(): void
+    {
+        // SQLite doesn't support SET TRANSACTION ISOLATION LEVEL
+        // This would work with MySQL or PostgreSQL
+        $this->markTestSkipped('SQLite does not support SET TRANSACTION ISOLATION LEVEL');
+
+        $transaction = new Transaction($this->connection, 2);
+
+        $this->assertEquals(2, $transaction->getIsolationLevel());
+        $transaction->close();
+    }
+
+    public function testConstructorWithInvalidIsolationLevelThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid isolation level');
+
+        new Transaction($this->connection, 999);
     }
 }

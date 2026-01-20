@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Touta\Ogam\Tests\Unit\Sql\Node;
 
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Sql\DynamicContext;
 use Touta\Ogam\Sql\Node\IfSqlNode;
@@ -201,7 +202,7 @@ final class IfSqlNodeTest extends TestCase
 
     public function testApplyWithObjectProperty(): void
     {
-        $user = new \stdClass();
+        $user = new stdClass();
         $user->name = 'Jane';
 
         $contents = new TextSqlNode('AND name = #{user.name}');

@@ -8,6 +8,7 @@ use JsonException;
 use PDO;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Touta\Ogam\Type\Handler\JsonHandler;
 
 final class JsonHandlerTest extends TestCase
@@ -94,7 +95,7 @@ final class JsonHandlerTest extends TestCase
 
     public function testSetParameterWithObject(): void
     {
-        $obj = new \stdClass();
+        $obj = new stdClass();
         $obj->name = 'John';
         $obj->age = 30;
 
@@ -194,7 +195,7 @@ final class JsonHandlerTest extends TestCase
 
     public function testGetResultWithAlreadyDecodedObject(): void
     {
-        $obj = new \stdClass();
+        $obj = new stdClass();
         $obj->name = 'John';
         $row = ['data' => $obj];
         $result = $this->handler->getResult($row, 'data');
@@ -249,7 +250,7 @@ final class JsonHandlerTest extends TestCase
         $row = ['data' => '{"name":"John"}'];
         $result = $handler->getResult($row, 'data');
 
-        $this->assertInstanceOf(\stdClass::class, $result);
+        $this->assertInstanceOf(stdClass::class, $result);
         $this->assertSame('John', $result->name);
     }
 

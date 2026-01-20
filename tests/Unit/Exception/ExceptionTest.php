@@ -213,7 +213,7 @@ final class ExceptionTest extends TestCase
 
     public function testTypeExceptionInvalidEnumValueWithStringable(): void
     {
-        $stringable = new class() implements Stringable {
+        $stringable = new class implements Stringable {
             public function __toString(): string
             {
                 return 'stringable_value';

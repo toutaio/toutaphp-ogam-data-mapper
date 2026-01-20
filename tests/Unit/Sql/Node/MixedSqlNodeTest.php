@@ -151,7 +151,7 @@ final class MixedSqlNodeTest extends TestCase
         $this->assertTrue($result);
         $this->assertSame(
             'SELECT * FROM users WHERE 1=1 AND name = #{name} AND age > #{age} ORDER BY id',
-            $context->getSql()
+            $context->getSql(),
         );
     }
 
@@ -250,7 +250,7 @@ final class MixedSqlNodeTest extends TestCase
         $this->assertTrue($result);
         $this->assertSame(
             'SELECT * FROM users WHERE 1=1 AND active = 1 AND age > #{filters.age}',
-            $context->getSql()
+            $context->getSql(),
         );
     }
 }

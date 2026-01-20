@@ -72,7 +72,7 @@ final class DateTimeHandlerTest extends TestCase
 
     public function testSetParameterWithStringable(): void
     {
-        $stringable = new class() implements Stringable {
+        $stringable = new class implements Stringable {
             public function __toString(): string
             {
                 return '2024-06-15 10:30:00';
@@ -212,7 +212,7 @@ final class DateTimeHandlerTest extends TestCase
 
     public function testGetResultWithStringable(): void
     {
-        $stringable = new class() implements Stringable {
+        $stringable = new class implements Stringable {
             public function __toString(): string
             {
                 return '2024-06-15 10:30:00';

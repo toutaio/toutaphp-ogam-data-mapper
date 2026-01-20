@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Touta\Ogam\Tests\Unit\Executor;
 
 use PDO;
-use PDOStatement;
 use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Executor\SimpleExecutor;
 use Touta\Ogam\Mapping\BoundSql;
@@ -16,13 +14,15 @@ use Touta\Ogam\Mapping\MappedStatement;
 use Touta\Ogam\Mapping\ParameterMapping;
 use Touta\Ogam\Mapping\StatementType;
 use Touta\Ogam\Transaction\TransactionInterface;
-use Touta\Ogam\Type\TypeHandlerRegistry;
 
 final class SimpleExecutorTest extends TestCase
 {
     private Configuration $configuration;
+
     private TransactionInterface $transaction;
+
     private PDO $connection;
+
     private SimpleExecutor $executor;
 
     protected function setUp(): void
@@ -43,7 +43,7 @@ final class SimpleExecutorTest extends TestCase
         $this->configuration = new Configuration();
         $this->transaction = $this->createMock(TransactionInterface::class);
 
-        
+
 
         $this->transaction->method('getConnection')
             ->willReturn($this->connection);
@@ -58,7 +58,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users');
@@ -79,7 +79,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $boundSql = new BoundSql('SELECT id, name, email FROM users ORDER BY id');
@@ -102,7 +102,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $mappings = [new ParameterMapping('name')];
@@ -127,7 +127,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $mappings = [new ParameterMapping('name')];
@@ -146,7 +146,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users');
@@ -171,7 +171,7 @@ final class SimpleExecutorTest extends TestCase
             id: 'countUsers',
             namespace: 'UserMapper',
             type: StatementType::SELECT,
-            hydration: Hydration::SCALAR
+            hydration: Hydration::SCALAR,
         );
 
         $boundSql = new BoundSql('SELECT COUNT(*) FROM users');
@@ -190,7 +190,7 @@ final class SimpleExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'updateUser',
             namespace: 'UserMapper',
-            type: StatementType::UPDATE
+            type: StatementType::UPDATE,
         );
 
         $mappings = [
@@ -202,7 +202,7 @@ final class SimpleExecutorTest extends TestCase
         $affectedRows = $this->executor->update(
             $statement,
             ['email' => 'newemail@example.com', 'name' => 'John Doe'],
-            $boundSql
+            $boundSql,
         );
 
         $this->assertEquals(1, $affectedRows);
@@ -213,7 +213,7 @@ final class SimpleExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'updateUser',
             namespace: 'UserMapper',
-            type: StatementType::UPDATE
+            type: StatementType::UPDATE,
         );
 
         $mappings = [
@@ -225,7 +225,7 @@ final class SimpleExecutorTest extends TestCase
         $affectedRows = $this->executor->update(
             $statement,
             ['email' => 'newemail@example.com', 'name' => 'NonExistent'],
-            $boundSql
+            $boundSql,
         );
 
         $this->assertEquals(0, $affectedRows);
@@ -238,7 +238,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: 'id'
+            keyProperty: 'id',
         );
 
         $parameter = ['name' => 'John Doe', 'email' => 'john@example.com'];
@@ -264,12 +264,14 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: 'id'
+            keyProperty: 'id',
         );
 
         $parameter = new class {
             public ?int $id = null;
+
             public string $name = 'John Doe';
+
             public string $email = 'john@example.com';
         };
 
@@ -292,12 +294,14 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: 'id'
+            keyProperty: 'id',
         );
 
         $parameter = new class {
             private ?int $id = null;
+
             public string $name = 'John Doe';
+
             public string $email = 'john@example.com';
 
             public function setId(string $id): void
@@ -329,14 +333,14 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: 'id'
+            keyProperty: 'id',
         );
 
         $parameter = new class {
             public function __construct(
                 public readonly ?int $id = null,
                 public string $name = 'John Doe',
-                public string $email = 'john@example.com'
+                public string $email = 'john@example.com',
             ) {}
         };
 
@@ -358,7 +362,7 @@ final class SimpleExecutorTest extends TestCase
             id: 'insertUser',
             namespace: 'UserMapper',
             type: StatementType::INSERT,
-            useGeneratedKeys: false
+            useGeneratedKeys: false,
         );
 
         $parameter = ['name' => 'John Doe', 'email' => 'john@example.com'];
@@ -381,7 +385,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: null
+            keyProperty: null,
         );
 
         $parameter = ['name' => 'John Doe', 'email' => 'john@example.com'];
@@ -403,7 +407,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: 'nonExistentProperty'
+            keyProperty: 'nonExistentProperty',
         );
 
         $parameter = new class {
@@ -426,7 +430,7 @@ final class SimpleExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'deleteUser',
             namespace: 'UserMapper',
-            type: StatementType::DELETE
+            type: StatementType::DELETE,
         );
 
         $mappings = [new ParameterMapping('name')];
@@ -454,7 +458,7 @@ final class SimpleExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'insertUser',
             namespace: 'UserMapper',
-            type: StatementType::INSERT
+            type: StatementType::INSERT,
         );
 
         $mappings = [new ParameterMapping('name')];
@@ -479,7 +483,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $mappings = [new ParameterMapping('name')];
@@ -502,7 +506,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $mappings = [
@@ -514,7 +518,7 @@ final class SimpleExecutorTest extends TestCase
         $results = $this->executor->query(
             $statement,
             ['email' => '%example.com', 'active' => 1],
-            $boundSql
+            $boundSql,
         );
 
         $this->assertCount(1, $results);
@@ -529,7 +533,7 @@ final class SimpleExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'deactivateAll',
             namespace: 'UserMapper',
-            type: StatementType::UPDATE
+            type: StatementType::UPDATE,
         );
 
         $boundSql = new BoundSql('UPDATE users SET active = 0 WHERE active = 1');
@@ -548,7 +552,7 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users');
@@ -576,19 +580,19 @@ final class SimpleExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $insertStmt = new MappedStatement(
             id: 'insertUser',
             namespace: 'UserMapper',
-            type: StatementType::INSERT
+            type: StatementType::INSERT,
         );
 
         $selectSql = new BoundSql('SELECT * FROM users');
         $insertSql = new BoundSql(
             'INSERT INTO users (name, email) VALUES (?, ?)',
-            [new ParameterMapping('name'), new ParameterMapping('email')]
+            [new ParameterMapping('name'), new ParameterMapping('email')],
         );
 
         // First query

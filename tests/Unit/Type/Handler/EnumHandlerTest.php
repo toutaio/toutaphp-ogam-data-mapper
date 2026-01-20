@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Tests\Unit\Type\Handler;
 
-use BackedEnum;
 use InvalidArgumentException;
 use PDO;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Touta\Ogam\Type\Handler\EnumHandler;
-use UnitEnum;
 use ValueError;
 
 enum StringStatus: string
@@ -48,7 +47,7 @@ final class EnumHandlerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class "stdClass" is not an enum');
 
-        new EnumHandler(\stdClass::class);
+        new EnumHandler(stdClass::class);
     }
 
     public function testSetParameterWithStringBackedEnum(): void

@@ -14,7 +14,9 @@ use Touta\Ogam\Parsing\XmlMapperParser;
 final class XmlMapperParserTest extends TestCase
 {
     private Configuration $configuration;
+
     private XmlMapperParser $parser;
+
     private string $tempDir;
 
     protected function setUp(): void
@@ -22,7 +24,7 @@ final class XmlMapperParserTest extends TestCase
         $this->configuration = new Configuration();
         $this->parser = new XmlMapperParser($this->configuration);
         $this->tempDir = sys_get_temp_dir() . '/ogam_mapper_test_' . uniqid();
-        mkdir($this->tempDir, 0777, true);
+        mkdir($this->tempDir, 0o777, true);
     }
 
     protected function tearDown(): void
@@ -49,10 +51,10 @@ final class XmlMapperParserTest extends TestCase
     public function testParseXmlFailsWithWrongRootElement(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<wrongElement>
-</wrongElement>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wrongElement>
+            </wrongElement>
+            XML;
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid mapper: root element must be <mapper>');
@@ -63,10 +65,10 @@ XML;
     public function testParseXmlFailsWithoutNamespace(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper>
+            </mapper>
+            XML;
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Mapper must have a namespace attribute');
@@ -77,10 +79,10 @@ XML;
     public function testParseMinimalMapper(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="TestMapper">
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="TestMapper">
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -91,13 +93,13 @@ XML;
     public function testParseSelectStatement(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findById">
-        SELECT * FROM users WHERE id = #{id}
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findById">
+                    SELECT * FROM users WHERE id = #{id}
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -111,13 +113,13 @@ XML;
     public function testParseInsertStatement(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <insert id="insertUser">
-        INSERT INTO users (name, email) VALUES (#{name}, #{email})
-    </insert>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <insert id="insertUser">
+                    INSERT INTO users (name, email) VALUES (#{name}, #{email})
+                </insert>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -129,13 +131,13 @@ XML;
     public function testParseUpdateStatement(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <update id="updateUser">
-        UPDATE users SET name = #{name} WHERE id = #{id}
-    </update>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <update id="updateUser">
+                    UPDATE users SET name = #{name} WHERE id = #{id}
+                </update>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -147,13 +149,13 @@ XML;
     public function testParseDeleteStatement(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <delete id="deleteUser">
-        DELETE FROM users WHERE id = #{id}
-    </delete>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <delete id="deleteUser">
+                    DELETE FROM users WHERE id = #{id}
+                </delete>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -165,13 +167,13 @@ XML;
     public function testParseStatementWithResultType(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findById" resultType="User">
-        SELECT * FROM users WHERE id = #{id}
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findById" resultType="User">
+                    SELECT * FROM users WHERE id = #{id}
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -183,17 +185,17 @@ XML;
     public function testParseStatementWithResultMap(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <result property="name" column="name"/>
-    </resultMap>
-    <select id="findById" resultMap="UserResult">
-        SELECT * FROM users WHERE id = #{id}
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <result property="name" column="name"/>
+                </resultMap>
+                <select id="findById" resultMap="UserResult">
+                    SELECT * FROM users WHERE id = #{id}
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -205,13 +207,13 @@ XML;
     public function testParseStatementWithParameterType(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <insert id="insertUser" parameterType="User">
-        INSERT INTO users (name) VALUES (#{name})
-    </insert>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <insert id="insertUser" parameterType="User">
+                    INSERT INTO users (name) VALUES (#{name})
+                </insert>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -223,13 +225,13 @@ XML;
     public function testParseStatementWithUseGeneratedKeys(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (name) VALUES (#{name})
-    </insert>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+                    INSERT INTO users (name) VALUES (#{name})
+                </insert>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -242,13 +244,13 @@ XML;
     public function testParseStatementWithKeyColumn(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" keyColumn="user_id">
-        INSERT INTO users (name) VALUES (#{name})
-    </insert>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" keyColumn="user_id">
+                    INSERT INTO users (name) VALUES (#{name})
+                </insert>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -260,13 +262,13 @@ XML;
     public function testParseStatementWithTimeout(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findAll" timeout="30000">
-        SELECT * FROM users
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findAll" timeout="30000">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -278,13 +280,13 @@ XML;
     public function testParseStatementWithFetchSize(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findAll" fetchSize="100">
-        SELECT * FROM users
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findAll" fetchSize="100">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -296,13 +298,13 @@ XML;
     public function testParseStatementWithHydrationArray(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findAll" hydration="array">
-        SELECT * FROM users
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findAll" hydration="array">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -314,13 +316,13 @@ XML;
     public function testParseStatementWithHydrationScalar(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="count" hydration="scalar">
-        SELECT COUNT(*) FROM users
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="count" hydration="scalar">
+                    SELECT COUNT(*) FROM users
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -332,13 +334,13 @@ XML;
     public function testParseStatementWithHydrationObject(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findById" hydration="object">
-        SELECT * FROM users WHERE id = #{id}
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findById" hydration="object">
+                    SELECT * FROM users WHERE id = #{id}
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -350,15 +352,15 @@ XML;
     public function testParseResultMap(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="user_id"/>
-        <result property="name" column="user_name"/>
-        <result property="email" column="user_email"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="user_id"/>
+                    <result property="name" column="user_name"/>
+                    <result property="email" column="user_email"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -375,13 +377,13 @@ XML;
         $this->configuration->addTypeAlias('User', 'App\Entity\User');
 
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -393,16 +395,16 @@ XML;
     public function testParseResultMapWithExtends(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="BaseResult" type="User">
-        <id property="id" column="id"/>
-    </resultMap>
-    <resultMap id="ExtendedResult" type="User" extends="BaseResult">
-        <result property="name" column="name"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="BaseResult" type="User">
+                    <id property="id" column="id"/>
+                </resultMap>
+                <resultMap id="ExtendedResult" type="User" extends="BaseResult">
+                    <result property="name" column="name"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -414,13 +416,13 @@ XML;
     public function testParseResultMapWithAutoMappingDisabled(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User" autoMapping="false">
-        <id property="id" column="id"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User" autoMapping="false">
+                    <id property="id" column="id"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -432,17 +434,17 @@ XML;
     public function testParseResultMapWithAssociation(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <association property="address" phpType="Address" columnPrefix="addr_">
-            <id property="id" column="id"/>
-            <result property="street" column="street"/>
-        </association>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <association property="address" phpType="Address" columnPrefix="addr_">
+                        <id property="id" column="id"/>
+                        <result property="street" column="street"/>
+                    </association>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -459,17 +461,17 @@ XML;
     public function testParseResultMapWithAssociationResultMap(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="AddressResult" type="Address">
-        <id property="id" column="id"/>
-    </resultMap>
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <association property="address" phpType="Address" resultMap="AddressResult"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="AddressResult" type="Address">
+                    <id property="id" column="id"/>
+                </resultMap>
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <association property="address" phpType="Address" resultMap="AddressResult"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -483,17 +485,17 @@ XML;
     public function testParseResultMapWithCollection(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <collection property="orders" ofType="Order" columnPrefix="order_">
-            <id property="id" column="id"/>
-            <result property="total" column="total"/>
-        </collection>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <collection property="orders" ofType="Order" columnPrefix="order_">
+                        <id property="id" column="id"/>
+                        <result property="total" column="total"/>
+                    </collection>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -510,17 +512,17 @@ XML;
     public function testParseResultMapWithCollectionResultMap(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="OrderResult" type="Order">
-        <id property="id" column="id"/>
-    </resultMap>
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <collection property="orders" ofType="Order" resultMap="OrderResult"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="OrderResult" type="Order">
+                    <id property="id" column="id"/>
+                </resultMap>
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <collection property="orders" ofType="Order" resultMap="OrderResult"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -534,20 +536,20 @@ XML;
     public function testParseResultMapWithDiscriminator(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="AdminResult" type="Admin">
-        <id property="id" column="id"/>
-    </resultMap>
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <discriminator column="user_type" phpType="string">
-            <case value="admin" resultMap="AdminResult"/>
-            <case value="regular" resultMap="UserResult"/>
-        </discriminator>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="AdminResult" type="Admin">
+                    <id property="id" column="id"/>
+                </resultMap>
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <discriminator column="user_type" phpType="string">
+                        <case value="admin" resultMap="AdminResult"/>
+                        <case value="regular" resultMap="UserResult"/>
+                    </discriminator>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -563,16 +565,16 @@ XML;
     public function testParseStatementWithIfNode(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findUsers">
-        SELECT * FROM users
-        <if test="name != null">
-            WHERE name = #{name}
-        </if>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findUsers">
+                    SELECT * FROM users
+                    <if test="name != null">
+                        WHERE name = #{name}
+                    </if>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -583,18 +585,18 @@ XML;
     public function testParseStatementWithWhereNode(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findUsers">
-        SELECT * FROM users
-        <where>
-            <if test="name != null">
-                AND name = #{name}
-            </if>
-        </where>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findUsers">
+                    SELECT * FROM users
+                    <where>
+                        <if test="name != null">
+                            AND name = #{name}
+                        </if>
+                    </where>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -605,19 +607,19 @@ XML;
     public function testParseStatementWithSetNode(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <update id="updateUser">
-        UPDATE users
-        <set>
-            <if test="name != null">
-                name = #{name},
-            </if>
-        </set>
-        WHERE id = #{id}
-    </update>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <update id="updateUser">
+                    UPDATE users
+                    <set>
+                        <if test="name != null">
+                            name = #{name},
+                        </if>
+                    </set>
+                    WHERE id = #{id}
+                </update>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -628,18 +630,18 @@ XML;
     public function testParseStatementWithTrimNode(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findUsers">
-        SELECT * FROM users
-        <trim prefix="WHERE" prefixOverrides="AND |OR ">
-            <if test="name != null">
-                AND name = #{name}
-            </if>
-        </trim>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findUsers">
+                    SELECT * FROM users
+                    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+                        <if test="name != null">
+                            AND name = #{name}
+                        </if>
+                    </trim>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -650,24 +652,24 @@ XML;
     public function testParseStatementWithChooseNode(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findUsers">
-        SELECT * FROM users
-        <choose>
-            <when test="name != null">
-                WHERE name = #{name}
-            </when>
-            <when test="email != null">
-                WHERE email = #{email}
-            </when>
-            <otherwise>
-                WHERE 1=1
-            </otherwise>
-        </choose>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findUsers">
+                    SELECT * FROM users
+                    <choose>
+                        <when test="name != null">
+                            WHERE name = #{name}
+                        </when>
+                        <when test="email != null">
+                            WHERE email = #{email}
+                        </when>
+                        <otherwise>
+                            WHERE 1=1
+                        </otherwise>
+                    </choose>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -678,16 +680,16 @@ XML;
     public function testParseStatementWithForEachNode(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findByIds">
-        SELECT * FROM users WHERE id IN
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findByIds">
+                    SELECT * FROM users WHERE id IN
+                    <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                        #{id}
+                    </foreach>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -698,16 +700,16 @@ XML;
     public function testParseStatementWithForEachNodeWithIndex(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findByIds">
-        SELECT * FROM users WHERE id IN
-        <foreach collection="ids" item="id" index="idx" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findByIds">
+                    SELECT * FROM users WHERE id IN
+                    <foreach collection="ids" item="id" index="idx" open="(" close=")" separator=",">
+                        #{id}
+                    </foreach>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -718,14 +720,14 @@ XML;
     public function testParseStatementWithBindNode(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findUsers">
-        <bind name="pattern" value="'%' + name + '%'"/>
-        SELECT * FROM users WHERE name LIKE #{pattern}
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findUsers">
+                    <bind name="pattern" value="'%' + name + '%'"/>
+                    SELECT * FROM users WHERE name LIKE #{pattern}
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -736,22 +738,22 @@ XML;
     public function testParseMultipleStatements(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findById">
-        SELECT * FROM users WHERE id = #{id}
-    </select>
-    <insert id="insertUser">
-        INSERT INTO users (name) VALUES (#{name})
-    </insert>
-    <update id="updateUser">
-        UPDATE users SET name = #{name} WHERE id = #{id}
-    </update>
-    <delete id="deleteUser">
-        DELETE FROM users WHERE id = #{id}
-    </delete>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findById">
+                    SELECT * FROM users WHERE id = #{id}
+                </select>
+                <insert id="insertUser">
+                    INSERT INTO users (name) VALUES (#{name})
+                </insert>
+                <update id="updateUser">
+                    UPDATE users SET name = #{name} WHERE id = #{id}
+                </update>
+                <delete id="deleteUser">
+                    DELETE FROM users WHERE id = #{id}
+                </delete>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -764,13 +766,13 @@ XML;
     public function testParseFromFile(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findAll">
-        SELECT * FROM users
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findAll">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
 
         $mapperPath = $this->tempDir . '/UserMapper.xml';
         file_put_contents($mapperPath, $xml);
@@ -795,14 +797,14 @@ XML;
     public function testParseResultMappingWithPhpType(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <result property="age" column="age" phpType="int"/>
-        <result property="email" column="email" phpType="string"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <result property="age" column="age" phpType="int"/>
+                    <result property="email" column="email" phpType="string"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -814,13 +816,13 @@ XML;
     public function testParseResultMappingWithTypeHandler(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <result property="data" column="data" typeHandler="JsonTypeHandler"/>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <result property="data" column="data" typeHandler="JsonTypeHandler"/>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -831,33 +833,33 @@ XML;
     public function testParseComplexMapper(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <association property="address" phpType="Address">
-            <id property="id" column="addr_id"/>
-            <result property="street" column="addr_street"/>
-        </association>
-        <collection property="orders" ofType="Order">
-            <id property="id" column="order_id"/>
-            <result property="total" column="order_total"/>
-        </collection>
-    </resultMap>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <result property="name" column="name"/>
+                    <association property="address" phpType="Address">
+                        <id property="id" column="addr_id"/>
+                        <result property="street" column="addr_street"/>
+                    </association>
+                    <collection property="orders" ofType="Order">
+                        <id property="id" column="order_id"/>
+                        <result property="total" column="order_total"/>
+                    </collection>
+                </resultMap>
 
-    <select id="findById" resultMap="UserResult">
-        SELECT
-            u.id, u.name,
-            a.id as addr_id, a.street as addr_street,
-            o.id as order_id, o.total as order_total
-        FROM users u
-        LEFT JOIN addresses a ON u.id = a.user_id
-        LEFT JOIN orders o ON u.id = o.user_id
-        WHERE u.id = #{id}
-    </select>
-</mapper>
-XML;
+                <select id="findById" resultMap="UserResult">
+                    SELECT
+                        u.id, u.name,
+                        a.id as addr_id, a.street as addr_street,
+                        o.id as order_id, o.total as order_total
+                    FROM users u
+                    LEFT JOIN addresses a ON u.id = a.user_id
+                    LEFT JOIN orders o ON u.id = o.user_id
+                    WHERE u.id = #{id}
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -874,26 +876,26 @@ XML;
     public function testParseStatementWithNestedDynamicNodes(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findUsers">
-        SELECT * FROM users
-        <where>
-            <if test="name != null">
-                AND name = #{name}
-            </if>
-            <choose>
-                <when test="status == 'active'">
-                    AND status = 'active'
-                </when>
-                <otherwise>
-                    AND status != 'deleted'
-                </otherwise>
-            </choose>
-        </where>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findUsers">
+                    SELECT * FROM users
+                    <where>
+                        <if test="name != null">
+                            AND name = #{name}
+                        </if>
+                        <choose>
+                            <when test="status == 'active'">
+                                AND status = 'active'
+                            </when>
+                            <otherwise>
+                                AND status != 'deleted'
+                            </otherwise>
+                        </choose>
+                    </where>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -904,16 +906,16 @@ XML;
     public function testParseAssociationWithoutPhpType(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <association property="address">
-            <id property="id" column="addr_id"/>
-        </association>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <association property="address">
+                        <id property="id" column="addr_id"/>
+                    </association>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -926,16 +928,16 @@ XML;
     public function testParseCollectionWithoutOfType(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <collection property="items">
-            <id property="id" column="item_id"/>
-        </collection>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <collection property="items">
+                        <id property="id" column="item_id"/>
+                    </collection>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -948,19 +950,19 @@ XML;
     public function testParseDiscriminatorWithoutPhpType(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <resultMap id="BaseResult" type="User">
-        <id property="id" column="id"/>
-    </resultMap>
-    <resultMap id="UserResult" type="User">
-        <id property="id" column="id"/>
-        <discriminator column="type">
-            <case value="admin" resultMap="BaseResult"/>
-        </discriminator>
-    </resultMap>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <resultMap id="BaseResult" type="User">
+                    <id property="id" column="id"/>
+                </resultMap>
+                <resultMap id="UserResult" type="User">
+                    <id property="id" column="id"/>
+                    <discriminator column="type">
+                        <case value="admin" resultMap="BaseResult"/>
+                    </discriminator>
+                </resultMap>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 
@@ -972,16 +974,16 @@ XML;
     public function testParseForEachWithDefaults(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="UserMapper">
-    <select id="findByIds">
-        SELECT * FROM users WHERE id IN
-        <foreach collection="ids">
-            #{item}
-        </foreach>
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findByIds">
+                    SELECT * FROM users WHERE id IN
+                    <foreach collection="ids">
+                        #{item}
+                    </foreach>
+                </select>
+            </mapper>
+            XML;
 
         $this->parser->parseXml($xml);
 

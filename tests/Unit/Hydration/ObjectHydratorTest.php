@@ -23,6 +23,7 @@ class TestUserEntity
 class TestMutableEntity
 {
     public int $id;
+
     public string $name;
 
     public function setId(int $id): void
@@ -39,12 +40,14 @@ class TestMutableEntity
 class TestEmptyConstructorEntity
 {
     public int $id;
+
     public string $name;
 }
 
 class TestEntityWithReadonly
 {
     public string $name = '';
+
     private int $privateId = 0;
 
     public function getId(): int

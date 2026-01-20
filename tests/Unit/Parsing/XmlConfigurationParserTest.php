@@ -13,13 +13,14 @@ use Touta\Ogam\Parsing\XmlConfigurationParser;
 final class XmlConfigurationParserTest extends TestCase
 {
     private XmlConfigurationParser $parser;
+
     private string $tempDir;
 
     protected function setUp(): void
     {
         $this->parser = new XmlConfigurationParser();
         $this->tempDir = sys_get_temp_dir() . '/ogam_test_' . uniqid();
-        mkdir($this->tempDir, 0777, true);
+        mkdir($this->tempDir, 0o777, true);
     }
 
     protected function tearDown(): void
@@ -30,10 +31,10 @@ final class XmlConfigurationParserTest extends TestCase
     public function testParseMinimalConfiguration(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -59,10 +60,10 @@ XML;
     public function testParseFailsWithWrongRootElement(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<wrongElement>
-</wrongElement>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wrongElement>
+            </wrongElement>
+            XML;
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid configuration: root element must be <configuration>');
@@ -81,19 +82,19 @@ XML;
     public function testParseSettingsWithAllOptions(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="cacheEnabled" value="false"/>
-        <setting name="lazyLoadingEnabled" value="true"/>
-        <setting name="mapUnderscoreToCamelCase" value="true"/>
-        <setting name="defaultExecutorType" value="BATCH"/>
-        <setting name="defaultStatementTimeout" value="30000"/>
-        <setting name="useGeneratedKeys" value="true"/>
-        <setting name="debugMode" value="true"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="cacheEnabled" value="false"/>
+                    <setting name="lazyLoadingEnabled" value="true"/>
+                    <setting name="mapUnderscoreToCamelCase" value="true"/>
+                    <setting name="defaultExecutorType" value="BATCH"/>
+                    <setting name="defaultStatementTimeout" value="30000"/>
+                    <setting name="useGeneratedKeys" value="true"/>
+                    <setting name="debugMode" value="true"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -109,16 +110,16 @@ XML;
     public function testParseSettingsWithBooleanVariations(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="cacheEnabled" value="1"/>
-        <setting name="lazyLoadingEnabled" value="yes"/>
-        <setting name="mapUnderscoreToCamelCase" value="on"/>
-        <setting name="useGeneratedKeys" value="TRUE"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="cacheEnabled" value="1"/>
+                    <setting name="lazyLoadingEnabled" value="yes"/>
+                    <setting name="mapUnderscoreToCamelCase" value="on"/>
+                    <setting name="useGeneratedKeys" value="TRUE"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -131,16 +132,16 @@ XML;
     public function testParseSettingsWithBooleanFalseVariations(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="cacheEnabled" value="false"/>
-        <setting name="lazyLoadingEnabled" value="0"/>
-        <setting name="mapUnderscoreToCamelCase" value="no"/>
-        <setting name="useGeneratedKeys" value="off"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="cacheEnabled" value="false"/>
+                    <setting name="lazyLoadingEnabled" value="0"/>
+                    <setting name="mapUnderscoreToCamelCase" value="no"/>
+                    <setting name="useGeneratedKeys" value="off"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -153,37 +154,37 @@ XML;
     public function testParseSettingsWithExecutorTypes(): void
     {
         $xmlReuse = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="defaultExecutorType" value="REUSE"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="defaultExecutorType" value="REUSE"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xmlReuse);
         $this->assertSame(ExecutorType::REUSE, $config->getDefaultExecutorType());
 
         $xmlBatch = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="defaultExecutorType" value="BATCH"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="defaultExecutorType" value="BATCH"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xmlBatch);
         $this->assertSame(ExecutorType::BATCH, $config->getDefaultExecutorType());
 
         $xmlSimple = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="defaultExecutorType" value="SIMPLE"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="defaultExecutorType" value="SIMPLE"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xmlSimple);
         $this->assertSame(ExecutorType::SIMPLE, $config->getDefaultExecutorType());
@@ -192,13 +193,13 @@ XML;
     public function testParseSettingsWithUnknownExecutorTypeDefaultsToSimple(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="defaultExecutorType" value="UNKNOWN"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="defaultExecutorType" value="UNKNOWN"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertSame(ExecutorType::SIMPLE, $config->getDefaultExecutorType());
@@ -207,14 +208,14 @@ XML;
     public function testParseSettingsIgnoresUnknownSettings(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="unknownSetting" value="someValue"/>
-        <setting name="cacheEnabled" value="false"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="unknownSetting" value="someValue"/>
+                    <setting name="cacheEnabled" value="false"/>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertFalse($config->isCacheEnabled());
@@ -223,14 +224,14 @@ XML;
     public function testParseTypeAliases(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <typeAliases>
-        <typeAlias alias="User" type="App\Entity\User"/>
-        <typeAlias alias="Post" type="App\Entity\Post"/>
-    </typeAliases>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <typeAliases>
+                    <typeAlias alias="User" type="App\Entity\User"/>
+                    <typeAlias alias="Post" type="App\Entity\Post"/>
+                </typeAliases>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -241,13 +242,13 @@ XML;
     public function testParseTypeAliasesAreCaseInsensitive(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <typeAliases>
-        <typeAlias alias="User" type="App\Entity\User"/>
-    </typeAliases>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <typeAliases>
+                    <typeAlias alias="User" type="App\Entity\User"/>
+                </typeAliases>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -259,23 +260,23 @@ XML;
     public function testParseEnvironmentsWithDefaultAttribute(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments default="production">
-        <environment id="production">
-            <transactionManager type="JDBC"/>
-            <dataSource type="POOLED">
-                <property name="driver" value="mysql"/>
-                <property name="host" value="localhost"/>
-                <property name="port" value="3306"/>
-                <property name="database" value="mydb"/>
-                <property name="username" value="root"/>
-                <property name="password" value="secret"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments default="production">
+                    <environment id="production">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="POOLED">
+                            <property name="driver" value="mysql"/>
+                            <property name="host" value="localhost"/>
+                            <property name="port" value="3306"/>
+                            <property name="database" value="mydb"/>
+                            <property name="username" value="root"/>
+                            <property name="password" value="secret"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -286,18 +287,18 @@ XML;
     public function testParseEnvironmentWithManagedTransactionManager(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="MANAGED"/>
-            <dataSource type="SIMPLE">
-                <property name="dsn" value="sqlite::memory:"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="MANAGED"/>
+                        <dataSource type="SIMPLE">
+                            <property name="dsn" value="sqlite::memory:"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -309,18 +310,18 @@ XML;
     public function testParseEnvironmentWithJdbcTransactionManager(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="dsn" value="sqlite::memory:"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="dsn" value="sqlite::memory:"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -331,15 +332,15 @@ XML;
     public function testParseEnvironmentFailsWithoutDataSource(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Environment must have a dataSource');
@@ -350,20 +351,20 @@ XML;
     public function testParseDataSourceWithDsn(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="dsn" value="mysql:host=localhost;dbname=test"/>
-                <property name="username" value="user"/>
-                <property name="password" value="pass"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="dsn" value="mysql:host=localhost;dbname=test"/>
+                            <property name="username" value="user"/>
+                            <property name="password" value="pass"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertNotNull($config->getEnvironment('test'));
@@ -372,23 +373,23 @@ XML;
     public function testParseDataSourceBuildsMySQL_Dsn(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="UNPOOLED">
-                <property name="driver" value="mysql"/>
-                <property name="host" value="localhost"/>
-                <property name="port" value="3306"/>
-                <property name="database" value="testdb"/>
-                <property name="username" value="user"/>
-                <property name="password" value="pass"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="UNPOOLED">
+                            <property name="driver" value="mysql"/>
+                            <property name="host" value="localhost"/>
+                            <property name="port" value="3306"/>
+                            <property name="database" value="testdb"/>
+                            <property name="username" value="user"/>
+                            <property name="password" value="pass"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertNotNull($config->getEnvironment('test'));
@@ -397,23 +398,23 @@ XML;
     public function testParseDataSourceBuildsPostgreSQLDsn(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="POOLED">
-                <property name="driver" value="pgsql"/>
-                <property name="host" value="localhost"/>
-                <property name="port" value="5432"/>
-                <property name="database" value="testdb"/>
-                <property name="username" value="user"/>
-                <property name="password" value="pass"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="POOLED">
+                            <property name="driver" value="pgsql"/>
+                            <property name="host" value="localhost"/>
+                            <property name="port" value="5432"/>
+                            <property name="database" value="testdb"/>
+                            <property name="username" value="user"/>
+                            <property name="password" value="pass"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertNotNull($config->getEnvironment('test'));
@@ -422,19 +423,19 @@ XML;
     public function testParseDataSourceBuildsSQLiteDsn(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="driver" value="sqlite"/>
-                <property name="database" value="/tmp/test.db"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="driver" value="sqlite"/>
+                            <property name="database" value="/tmp/test.db"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertNotNull($config->getEnvironment('test'));
@@ -443,19 +444,19 @@ XML;
     public function testParseDataSourceWithUnknownDriverThrowsException(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="driver" value="unknown"/>
-                <property name="database" value="testdb"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="driver" value="unknown"/>
+                            <property name="database" value="testdb"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unknown driver: unknown');
@@ -466,20 +467,20 @@ XML;
     public function testParseDataSourceWithDbNameProperty(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="driver" value="mysql"/>
-                <property name="host" value="localhost"/>
-                <property name="dbname" value="testdb"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="driver" value="mysql"/>
+                            <property name="host" value="localhost"/>
+                            <property name="dbname" value="testdb"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertNotNull($config->getEnvironment('test'));
@@ -491,22 +492,22 @@ XML;
         putenv('TEST_DB_USER=testuser');
 
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="driver" value="mysql"/>
-                <property name="host" value="\${TEST_DB_HOST}"/>
-                <property name="database" value="testdb"/>
-                <property name="username" value="\${TEST_DB_USER}"/>
-                <property name="password" value="pass"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="driver" value="mysql"/>
+                            <property name="host" value="\${TEST_DB_HOST}"/>
+                            <property name="database" value="testdb"/>
+                            <property name="username" value="\${TEST_DB_USER}"/>
+                            <property name="password" value="pass"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertNotNull($config->getEnvironment('test'));
@@ -518,20 +519,20 @@ XML;
     public function testParseDataSourceWithNonExistentEnvironmentVariable(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments>
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="driver" value="mysql"/>
-                <property name="host" value="\${NONEXISTENT_VAR}"/>
-                <property name="database" value="testdb"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments>
+                    <environment id="test">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="driver" value="mysql"/>
+                            <property name="host" value="\${NONEXISTENT_VAR}"/>
+                            <property name="database" value="testdb"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
         $this->assertNotNull($config->getEnvironment('test'));
@@ -540,24 +541,24 @@ XML;
     public function testParseMultipleEnvironments(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments default="development">
-        <environment id="development">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="dsn" value="sqlite::memory:"/>
-            </dataSource>
-        </environment>
-        <environment id="production">
-            <transactionManager type="JDBC"/>
-            <dataSource type="POOLED">
-                <property name="dsn" value="mysql:host=prod;dbname=app"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments default="development">
+                    <environment id="development">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="dsn" value="sqlite::memory:"/>
+                        </dataSource>
+                    </environment>
+                    <environment id="production">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="POOLED">
+                            <property name="dsn" value="mysql:host=prod;dbname=app"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -569,25 +570,25 @@ XML;
     public function testParseMappers(): void
     {
         $mapperXml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="TestMapper">
-    <select id="findAll">
-        SELECT * FROM users
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="TestMapper">
+                <select id="findAll">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
 
         $mapperPath = $this->tempDir . '/TestMapper.xml';
         file_put_contents($mapperPath, $mapperXml);
 
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <mappers>
-        <mapper resource="TestMapper.xml"/>
-    </mappers>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <mappers>
+                    <mapper resource="TestMapper.xml"/>
+                </mappers>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml, $this->tempDir);
 
@@ -597,25 +598,25 @@ XML;
     public function testParseMappersWithAbsolutePath(): void
     {
         $mapperXml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="TestMapper">
-    <select id="findAll">
-        SELECT * FROM users
-    </select>
-</mapper>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="TestMapper">
+                <select id="findAll">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
 
         $mapperPath = $this->tempDir . '/TestMapper.xml';
         file_put_contents($mapperPath, $mapperXml);
 
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <mappers>
-        <mapper resource="{$mapperPath}"/>
-    </mappers>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <mappers>
+                    <mapper resource="{$mapperPath}"/>
+                </mappers>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -625,13 +626,13 @@ XML;
     public function testParseMappersWithClass(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <mappers>
-        <mapper class="Touta\Ogam\Configuration"/>
-    </mappers>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <mappers>
+                    <mapper class="Touta\Ogam\Configuration"/>
+                </mappers>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -641,13 +642,13 @@ XML;
     public function testParseMappersWithNonExistentClass(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <mappers>
-        <mapper class="NonExistent\Class"/>
-    </mappers>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <mappers>
+                    <mapper class="NonExistent\Class"/>
+                </mappers>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -657,13 +658,13 @@ XML;
     public function testParseFromFile(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="cacheEnabled" value="false"/>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="cacheEnabled" value="false"/>
+                </settings>
+            </configuration>
+            XML;
 
         $configPath = $this->tempDir . '/config.xml';
         file_put_contents($configPath, $xml);
@@ -687,27 +688,27 @@ XML;
     public function testParseCompleteConfiguration(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-        <setting name="cacheEnabled" value="true"/>
-        <setting name="lazyLoadingEnabled" value="false"/>
-        <setting name="defaultExecutorType" value="BATCH"/>
-    </settings>
-    <typeAliases>
-        <typeAlias alias="User" type="App\Entity\User"/>
-        <typeAlias alias="Post" type="App\Entity\Post"/>
-    </typeAliases>
-    <environments default="development">
-        <environment id="development">
-            <transactionManager type="JDBC"/>
-            <dataSource type="SIMPLE">
-                <property name="dsn" value="sqlite::memory:"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                    <setting name="cacheEnabled" value="true"/>
+                    <setting name="lazyLoadingEnabled" value="false"/>
+                    <setting name="defaultExecutorType" value="BATCH"/>
+                </settings>
+                <typeAliases>
+                    <typeAlias alias="User" type="App\Entity\User"/>
+                    <typeAlias alias="Post" type="App\Entity\Post"/>
+                </typeAliases>
+                <environments default="development">
+                    <environment id="development">
+                        <transactionManager type="JDBC"/>
+                        <dataSource type="SIMPLE">
+                            <property name="dsn" value="sqlite::memory:"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -722,12 +723,12 @@ XML;
     public function testParseWithEmptySettings(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <settings>
-    </settings>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <settings>
+                </settings>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -739,12 +740,12 @@ XML;
     public function testParseWithEmptyTypeAliases(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <typeAliases>
-    </typeAliases>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <typeAliases>
+                </typeAliases>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -755,14 +756,14 @@ XML;
     public function testParseWithPackageInTypeAliases(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <typeAliases>
-        <package name="App\Entity"/>
-        <typeAlias alias="User" type="App\Entity\User"/>
-    </typeAliases>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <typeAliases>
+                    <package name="App\Entity"/>
+                    <typeAlias alias="User" type="App\Entity\User"/>
+                </typeAliases>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 
@@ -773,13 +774,13 @@ XML;
     public function testParseWithPackageInMappers(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <mappers>
-        <package name="App\Mapper"/>
-    </mappers>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <mappers>
+                    <package name="App\Mapper"/>
+                </mappers>
+            </configuration>
+            XML;
 
         $config = $this->parser->parseXml($xml);
 

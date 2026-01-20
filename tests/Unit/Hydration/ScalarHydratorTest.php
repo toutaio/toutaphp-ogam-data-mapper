@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Tests\Unit\Hydration;
 
+use DateTime;
 use PHPUnit\Framework\TestCase;
 use Stringable;
 use Touta\Ogam\Hydration\ScalarHydrator;
@@ -131,7 +132,7 @@ final class ScalarHydratorTest extends TestCase
 
     public function testHydrateWithStringableToString(): void
     {
-        $stringable = new class() implements Stringable {
+        $stringable = new class implements Stringable {
             public function __toString(): string
             {
                 return 'stringable';
@@ -155,9 +156,9 @@ final class ScalarHydratorTest extends TestCase
     public function testHydrateWithCustomTypeHandler(): void
     {
         $row = ['created_at' => '2024-06-15 10:30:00'];
-        $result = $this->hydrator->hydrate($row, null, \DateTime::class);
+        $result = $this->hydrator->hydrate($row, null, DateTime::class);
 
-        $this->assertInstanceOf(\DateTime::class, $result);
+        $this->assertInstanceOf(DateTime::class, $result);
     }
 
     public function testHydrateAllWithMultipleRows(): void

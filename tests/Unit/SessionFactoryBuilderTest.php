@@ -8,8 +8,8 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\SessionFactoryInterface;
-use Touta\Ogam\SessionFactoryBuilder;
 use Touta\Ogam\Session\DefaultSessionFactory;
+use Touta\Ogam\SessionFactoryBuilder;
 
 final class SessionFactoryBuilderTest extends TestCase
 {
@@ -76,18 +76,18 @@ final class SessionFactoryBuilderTest extends TestCase
     public function testBuildWithXmlConfigurationCreatesSessionFactory(): void
     {
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments default="development">
-        <environment id="development">
-            <dataSource type="UNPOOLED">
-                <property name="driver" value="pdo_sqlite"/>
-                <property name="url" value="sqlite::memory:"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments default="development">
+                    <environment id="development">
+                        <dataSource type="UNPOOLED">
+                            <property name="driver" value="sqlite"/>
+                            <property name="url" value="sqlite::memory:"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
 
         $builder = new SessionFactoryBuilder();
 
@@ -102,18 +102,18 @@ XML;
     {
         $configPath = $this->tempDir . '/config.xml';
         $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <environments default="development">
-        <environment id="development">
-            <dataSource type="UNPOOLED">
-                <property name="driver" value="pdo_sqlite"/>
-                <property name="url" value="sqlite::memory:"/>
-            </dataSource>
-        </environment>
-    </environments>
-</configuration>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <configuration>
+                <environments default="development">
+                    <environment id="development">
+                        <dataSource type="UNPOOLED">
+                            <property name="driver" value="sqlite"/>
+                            <property name="url" value="sqlite::memory:"/>
+                        </dataSource>
+                    </environment>
+                </environments>
+            </configuration>
+            XML;
         file_put_contents($configPath, $xml);
 
         $builder = new SessionFactoryBuilder();

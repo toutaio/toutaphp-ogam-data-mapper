@@ -10,7 +10,6 @@ use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Sql\DynamicSqlSource;
 use Touta\Ogam\Sql\Node\IfSqlNode;
 use Touta\Ogam\Sql\Node\MixedSqlNode;
-use Touta\Ogam\Sql\Node\SqlNode;
 use Touta\Ogam\Sql\Node\TextSqlNode;
 use Touta\Ogam\Sql\SqlSource;
 
@@ -92,8 +91,9 @@ final class DynamicSqlSourceTest extends TestCase
 
     public function testGetBoundSqlWithObjectParameter(): void
     {
-        $parameter = new class () {
+        $parameter = new class {
             public int $id = 42;
+
             public string $name = 'Test';
         };
 
@@ -169,8 +169,9 @@ final class DynamicSqlSourceTest extends TestCase
 
     public function testGetBoundSqlWithObjectContainingPrivateProperties(): void
     {
-        $parameter = new class () {
+        $parameter = new class {
             private int $id = 99;
+
             private string $status = 'active';
 
             public function getId(): int

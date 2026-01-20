@@ -37,6 +37,7 @@ interface TestMapper
 final class MapperProxyTest extends TestCase
 {
     private SessionInterface $session;
+
     private Configuration $configuration;
 
     protected function setUp(): void
@@ -78,12 +79,12 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'findById',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::SELECT
+            type: StatementType::SELECT,
         );
 
         $this->configuration->addMappedStatement($statement);
 
-        $expectedResult = (object)['id' => 1, 'name' => 'Test'];
+        $expectedResult = (object) ['id' => 1, 'name' => 'Test'];
 
         $this->session->expects($this->once())
             ->method('selectOne')
@@ -102,14 +103,14 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'findAll',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::SELECT
+            type: StatementType::SELECT,
         );
 
         $this->configuration->addMappedStatement($statement);
 
         $expectedResults = [
-            (object)['id' => 1, 'name' => 'Test1'],
-            (object)['id' => 2, 'name' => 'Test2'],
+            (object) ['id' => 1, 'name' => 'Test1'],
+            (object) ['id' => 2, 'name' => 'Test2'],
         ];
 
         $this->session->expects($this->once())
@@ -129,7 +130,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'insert',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::INSERT
+            type: StatementType::INSERT,
         );
 
         $this->configuration->addMappedStatement($statement);
@@ -151,7 +152,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'update',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::UPDATE
+            type: StatementType::UPDATE,
         );
 
         $this->configuration->addMappedStatement($statement);
@@ -173,7 +174,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'delete',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::DELETE
+            type: StatementType::DELETE,
         );
 
         $this->configuration->addMappedStatement($statement);
@@ -195,7 +196,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'getCount',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::SELECT
+            type: StatementType::SELECT,
         );
 
         $this->configuration->addMappedStatement($statement);
@@ -217,12 +218,12 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'findById',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::SELECT
+            type: StatementType::SELECT,
         );
 
         $this->configuration->addMappedStatement($statement);
 
-        $parameter = (object)['id' => 1];
+        $parameter = (object) ['id' => 1];
 
         $this->session->expects($this->once())
             ->method('selectOne')
@@ -239,7 +240,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'findWithDefault',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::SELECT
+            type: StatementType::SELECT,
         );
 
         $this->configuration->addMappedStatement($statement);
@@ -250,7 +251,7 @@ final class MapperProxyTest extends TestCase
                 'Touta\Ogam\Tests\Unit\Session\TestMapper.findWithDefault',
                 $this->callback(function ($param) {
                     return $param['id'] === 1 && $param['default'] === 'none';
-                })
+                }),
             )
             ->willReturn(null);
 
@@ -264,7 +265,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'update',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::UPDATE
+            type: StatementType::UPDATE,
         );
 
         $this->configuration->addMappedStatement($statement);
@@ -275,7 +276,7 @@ final class MapperProxyTest extends TestCase
                 'Touta\Ogam\Tests\Unit\Session\TestMapper.update',
                 $this->callback(function ($param) {
                     return $param['id'] === 5 && $param['name'] === 'NewName';
-                })
+                }),
             )
             ->willReturn(1);
 
@@ -289,7 +290,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'findById',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::SELECT
+            type: StatementType::SELECT,
         );
 
         $this->configuration->addMappedStatement($statement);
@@ -310,7 +311,7 @@ final class MapperProxyTest extends TestCase
         $statement = new MappedStatement(
             id: 'findAll',
             namespace: 'Touta\Ogam\Tests\Unit\Session\TestMapper',
-            type: StatementType::CALLABLE
+            type: StatementType::CALLABLE,
         );
 
         $this->configuration->addMappedStatement($statement);

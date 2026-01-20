@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Tests\Unit\Sql\Node;
 
+use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Sql\DynamicContext;
@@ -240,7 +241,7 @@ final class ForEachSqlNodeTest extends TestCase
     public function testApplyWithIterator(): void
     {
         $contents = new TextSqlNode('#{item}');
-        $iterator = new \ArrayIterator([1, 2, 3]);
+        $iterator = new ArrayIterator([1, 2, 3]);
         $node = new ForEachSqlNode('list', 'item', null, $contents, '(', ')', ',');
         $context = new DynamicContext($this->configuration, ['list' => $iterator]);
 

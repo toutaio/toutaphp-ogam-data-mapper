@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Touta\Ogam\Tests\Unit\Sql\Node;
 
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Sql\DynamicContext;
 use Touta\Ogam\Sql\Node\BindSqlNode;
@@ -74,7 +75,7 @@ final class BindSqlNodeTest extends TestCase
 
     public function testApplyWithObjectProperty(): void
     {
-        $user = new \stdClass();
+        $user = new stdClass();
         $user->name = 'Jane';
 
         $node = new BindSqlNode('userName', 'user.name');

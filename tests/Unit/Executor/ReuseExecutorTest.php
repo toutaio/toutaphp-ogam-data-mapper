@@ -13,13 +13,15 @@ use Touta\Ogam\Mapping\Hydration;
 use Touta\Ogam\Mapping\MappedStatement;
 use Touta\Ogam\Mapping\StatementType;
 use Touta\Ogam\Transaction\TransactionInterface;
-use Touta\Ogam\Type\TypeHandlerRegistry;
 
 final class ReuseExecutorTest extends TestCase
 {
     private Configuration $configuration;
+
     private TransactionInterface $transaction;
+
     private PDO $connection;
+
     private ReuseExecutor $executor;
 
     protected function setUp(): void
@@ -55,7 +57,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'stdClass',
-            hydration: Hydration::OBJECT
+            hydration: Hydration::OBJECT,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users WHERE name = "John"');
@@ -72,7 +74,7 @@ final class ReuseExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'insertUser',
             namespace: 'UserMapper',
-            type: StatementType::INSERT
+            type: StatementType::INSERT,
         );
 
         $boundSql = new BoundSql("INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com')");
@@ -90,7 +92,7 @@ final class ReuseExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'insertUser',
             namespace: 'UserMapper',
-            type: StatementType::INSERT
+            type: StatementType::INSERT,
         );
 
         $boundSql1 = new BoundSql("INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com')");
@@ -118,7 +120,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'stdClass',
-            hydration: Hydration::OBJECT
+            hydration: Hydration::OBJECT,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users');
@@ -143,7 +145,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'stdClass',
-            hydration: Hydration::OBJECT
+            hydration: Hydration::OBJECT,
         );
 
         $boundSql1 = new BoundSql('SELECT * FROM users WHERE name = "John"');
@@ -158,7 +160,7 @@ final class ReuseExecutorTest extends TestCase
 
     public function testUpdateWithGeneratedKeys(): void
     {
-        $parameter = new class () {
+        $parameter = new class {
             public ?string $id = null;
 
             public function setId(string $id): void
@@ -172,7 +174,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: 'id'
+            keyProperty: 'id',
         );
 
         $boundSql = new BoundSql("INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com')");
@@ -192,7 +194,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::INSERT,
             useGeneratedKeys: true,
-            keyProperty: 'id'
+            keyProperty: 'id',
         );
 
         $boundSql = new BoundSql("INSERT INTO users (name, email) VALUES ('Bob', 'bob@example.com')");
@@ -213,7 +215,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'stdClass',
-            hydration: Hydration::OBJECT
+            hydration: Hydration::OBJECT,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users');
@@ -234,7 +236,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'array',
-            hydration: Hydration::ARRAY
+            hydration: Hydration::ARRAY,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users ORDER BY id');
@@ -254,10 +256,10 @@ final class ReuseExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'updateUsers',
             namespace: 'UserMapper',
-            type: StatementType::UPDATE
+            type: StatementType::UPDATE,
         );
 
-        $boundSql = new BoundSql("UPDATE users SET active = 0 WHERE id > 0");
+        $boundSql = new BoundSql('UPDATE users SET active = 0 WHERE id > 0');
 
         $rowCount = $this->executor->update($statement, null, $boundSql);
 
@@ -269,7 +271,7 @@ final class ReuseExecutorTest extends TestCase
         $statement = new MappedStatement(
             id: 'insertUser',
             namespace: 'UserMapper',
-            type: StatementType::INSERT
+            type: StatementType::INSERT,
         );
 
         $boundSql1 = new BoundSql("INSERT INTO users (name, email) VALUES ('User1', 'user1@example.com')");
@@ -291,7 +293,7 @@ final class ReuseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'stdClass',
-            hydration: Hydration::OBJECT
+            hydration: Hydration::OBJECT,
         );
 
         $boundSql = new BoundSql('SELECT * FROM users');

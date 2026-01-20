@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Touta\Ogam\Tests\Unit\Sql;
 
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\ParameterMapping;
 use Touta\Ogam\Sql\SqlSource;
@@ -82,7 +83,7 @@ final class StaticSqlSourceTest extends TestCase
     {
         $source = new StaticSqlSource('SELECT * FROM users WHERE id = ?');
 
-        $param = new \stdClass();
+        $param = new stdClass();
         $param->id = 1;
         $boundSql = $source->getBoundSql($param);
 

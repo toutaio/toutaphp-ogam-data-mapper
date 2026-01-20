@@ -15,7 +15,7 @@ final class BaseTypeHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->handler = new class() extends BaseTypeHandler {
+        $this->handler = new class extends BaseTypeHandler {
             public function getPhpType(): string
             {
                 return 'test';

@@ -7,6 +7,7 @@ namespace Touta\Ogam\Tests\Unit\Cache;
 use DateTime;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Touta\Ogam\Cache\CacheKey;
 
 enum TestCacheStatus: string
@@ -196,7 +197,7 @@ final class CacheKeyTest extends TestCase
 
     public function testObjectParameterSerialization(): void
     {
-        $obj = new \stdClass();
+        $obj = new stdClass();
         $key = new CacheKey('UserMapper.find', ['obj' => $obj]);
 
         $this->assertStringStartsWith('ogam:', $key->toString());

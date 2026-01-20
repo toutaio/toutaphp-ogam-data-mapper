@@ -11,7 +11,6 @@ use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\ExecutorInterface;
 use Touta\Ogam\Executor\BaseExecutor;
-use Touta\Ogam\Hydration\HydratorFactory;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\Hydration;
 use Touta\Ogam\Mapping\MappedStatement;
@@ -19,14 +18,15 @@ use Touta\Ogam\Mapping\ParameterMapping;
 use Touta\Ogam\Mapping\ResultMap;
 use Touta\Ogam\Mapping\StatementType;
 use Touta\Ogam\Transaction\TransactionInterface;
-use Touta\Ogam\Type\TypeHandlerRegistry;
-use Touta\Ogam\Type\Handler\StringHandler;
 
 final class BaseExecutorTest extends TestCase
 {
     private Configuration $configuration;
+
     private TransactionInterface $transaction;
+
     private PDO $connection;
+
     private TestableExecutor $executor;
 
     protected function setUp(): void
@@ -38,7 +38,7 @@ final class BaseExecutorTest extends TestCase
         $this->configuration = new Configuration();
         $this->transaction = $this->createMock(TransactionInterface::class);
 
-        
+
 
         $this->transaction->method('getConnection')
             ->willReturn($this->connection);
@@ -307,6 +307,7 @@ final class BaseExecutorTest extends TestCase
     {
         $obj = new class {
             public int $id = 1;
+
             private string $name = 'John';
         };
 
@@ -389,7 +390,7 @@ final class BaseExecutorTest extends TestCase
             public string $city = 'New York';
         };
 
-        $user = new class($address) {
+        $user = new class ($address) {
             public function __construct(public object $address) {}
         };
 
@@ -550,7 +551,7 @@ final class BaseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultType: 'stdClass',
-            hydration: Hydration::OBJECT
+            hydration: Hydration::OBJECT,
         );
 
         $rows = [
@@ -570,7 +571,7 @@ final class BaseExecutorTest extends TestCase
         $resultMap = new ResultMap(
             id: 'userMap',
             type: 'stdClass',
-            resultMappings: []
+            resultMappings: [],
         );
 
         $this->configuration->addResultMap($resultMap);
@@ -580,13 +581,13 @@ final class BaseExecutorTest extends TestCase
             namespace: 'UserMapper',
             type: StatementType::SELECT,
             resultMapId: 'userMap',
-            resultType: 'stdClass'
+            resultType: 'stdClass',
         );
 
         $rows = [['id' => 1, 'name' => 'John']];
 
         $result = $this->executor->hydrateResultsPublic($statement, $rows);
-        
+
         $this->assertIsArray($result);
     }
 
@@ -597,7 +598,7 @@ final class BaseExecutorTest extends TestCase
             namespace: 'TestMapper',
             type: $type,
             sql: 'SELECT * FROM test',
-            resultType: 'stdClass'
+            resultType: 'stdClass',
         );
     }
 }
@@ -608,7 +609,9 @@ final class BaseExecutorTest extends TestCase
 class TestableExecutor extends BaseExecutor
 {
     private int $queryCallCount = 0;
+
     private bool $flushStatementsCalled = false;
+
     private array $queryResults = [];
 
     public function setQueryResults(array $results): void
@@ -629,29 +632,6 @@ class TestableExecutor extends BaseExecutor
     public function getLocalCacheForTest(): array
     {
         return $this->localCache;
-    }
-
-    protected function doQuery(
-        MappedStatement $statement,
-        array|object|null $parameter,
-        BoundSql $boundSql,
-    ): array {
-        $this->queryCallCount++;
-        return $this->hydrateResults($statement, $this->queryResults);
-    }
-
-    protected function doUpdate(
-        MappedStatement $statement,
-        array|object|null $parameter,
-        BoundSql $boundSql,
-    ): int {
-        return 1;
-    }
-
-    protected function doFlushStatements(): array
-    {
-        $this->flushStatementsCalled = true;
-        return [];
     }
 
     // Public wrappers for testing protected methods
@@ -694,5 +674,30 @@ class TestableExecutor extends BaseExecutor
     public function hydrateResultsPublic(MappedStatement $statement, array $rows): array
     {
         return $this->hydrateResults($statement, $rows);
+    }
+
+    protected function doQuery(
+        MappedStatement $statement,
+        array|object|null $parameter,
+        BoundSql $boundSql,
+    ): array {
+        $this->queryCallCount++;
+
+        return $this->hydrateResults($statement, $this->queryResults);
+    }
+
+    protected function doUpdate(
+        MappedStatement $statement,
+        array|object|null $parameter,
+        BoundSql $boundSql,
+    ): int {
+        return 1;
+    }
+
+    protected function doFlushStatements(): array
+    {
+        $this->flushStatementsCalled = true;
+
+        return [];
     }
 }

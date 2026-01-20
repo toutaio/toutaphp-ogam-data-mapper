@@ -127,7 +127,7 @@ final class PooledDataSourceTest extends TestCase
             'sqlite::memory:',
             options: [
                 PDO::ATTR_TIMEOUT => 10,
-            ]
+            ],
         );
 
         $connection = $dataSource->getConnection();
@@ -192,7 +192,7 @@ final class PooledDataSourceTest extends TestCase
         $dataSource = new PooledDataSource(
             'sqlite::memory:',
             username: null,
-            password: null
+            password: null,
         );
 
         $connection = $dataSource->getConnection();
@@ -208,7 +208,7 @@ final class PooledDataSourceTest extends TestCase
         for ($i = 0; $i < 15; $i++) {
             $connections[] = $dataSource->getConnection();
         }
-        
+
         foreach ($connections as $conn) {
             $dataSource->releaseConnection($conn);
         }
