@@ -1,5 +1,5 @@
 {
-    "name": "touta/ogam",
+    "name": "toutaphp/ogam-data-mapper",
     "description": "A MyBatis-inspired SQL mapping framework for PHP. Write the SQL you want, map results to objects automatically.",
     "type": "library",
     "license": "MIT",
@@ -15,10 +15,10 @@
     "authors": [
         {
             "name": "Touta Contributors",
-            "homepage": "https://github.com/toutaio/toutaphp-ogam"
+            "homepage": "https://github.com/toutaio/toutaphp-ogam-data-mapper/graphs/contributors"
         }
     ],
-    "homepage": "https://github.com/toutaio/toutaphp-ogam",
+    "homepage": "https://github.com/toutaio/toutaphp-ogam-data-mapper",
     "require": {
         "php": ">=8.3",
         "ext-pdo": "*"
