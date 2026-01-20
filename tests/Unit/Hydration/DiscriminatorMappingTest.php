@@ -88,6 +88,7 @@ final class SmsNotification extends Notification
 final class DiscriminatorMappingTest extends TestCase
 {
     private ObjectHydrator $hydrator;
+
     private Configuration $configuration;
 
     protected function setUp(): void
