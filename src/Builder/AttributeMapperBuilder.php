@@ -11,7 +11,6 @@ use Touta\Ogam\Attribute\Delete;
 use Touta\Ogam\Attribute\Insert;
 use Touta\Ogam\Attribute\Mapper;
 use Touta\Ogam\Attribute\Options;
-use Touta\Ogam\Attribute\Param;
 use Touta\Ogam\Attribute\Result;
 use Touta\Ogam\Attribute\Results;
 use Touta\Ogam\Attribute\Select;

@@ -38,7 +38,7 @@ final class InMemoryQueryLogger implements QueryLoggerInterface
      */
     public function getTotalExecutionTime(): float
     {
-        return array_sum(array_map(
+        return (float) array_sum(array_map(
             fn(QueryLogEntry $entry) => $entry->executionTimeMs,
             $this->entries,
         ));

@@ -63,7 +63,7 @@ final class XmlMapperParser
             throw new RuntimeException('Mapper must have a namespace attribute');
         }
 
-        // Clear and parse SQL fragments first
+        // Clear and parse SQL fragments first, since parsing a new file must reset them to avoid stale references
         $this->sqlFragments = [];
         $this->parseSqlFragments($mapper);
 
@@ -100,7 +100,7 @@ final class XmlMapperParser
             throw new RuntimeException('Mapper must have a namespace attribute');
         }
 
-        // Clear and parse SQL fragments first
+        // Clear and parse SQL fragments first, since parsing a new file must reset them to avoid stale references
         $this->sqlFragments = [];
         $this->parseSqlFragments($mapper);
 

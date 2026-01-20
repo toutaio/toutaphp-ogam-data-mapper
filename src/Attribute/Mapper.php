@@ -15,7 +15,7 @@ use Attribute;
  *
  * Example:
  * ```php
- * #[Mapper(namespace: 'App\Mapper\UserMapper')]
+ * #[Mapper(namespace: 'App\\Mapper\\UserMapper')]
  * interface UserMapper
  * {
  *     #[Select("SELECT * FROM users WHERE id = :id")]

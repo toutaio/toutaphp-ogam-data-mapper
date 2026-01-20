@@ -11,7 +11,7 @@ use ReflectionClass;
 use Touta\Ogam\Logging\QueryLogEntry;
 
 #[CoversClass(QueryLogEntry::class)]
-final class QueryLoggerTest extends TestCase
+final class QueryLogEntryTest extends TestCase
 {
     #[Test]
     public function queryLogEntryCanBeCreated(): void

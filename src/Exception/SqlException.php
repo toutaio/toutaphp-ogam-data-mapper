@@ -69,7 +69,7 @@ class SqlException extends OgamException
             $parts[] = 'Parameters: ' . json_encode($parameters);
         }
 
-        return implode("\n", $parts);
+        return implode(' | ', $parts);
     }
 
     /**

@@ -405,7 +405,7 @@ abstract class BaseExecutor implements ExecutorInterface
         $this->lastQuery = [
             'sql' => $boundSql->getSql(),
             'params' => $params,
-            'time' => $executionTimeMs / 1000, // Keep in seconds for backward compatibility
+            'time' => $executionTimeMs,
             'rowCount' => $rowCount,
             'statementId' => $statementId,
         ];
