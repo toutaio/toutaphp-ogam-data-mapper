@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Touta\Ogam\Executor;
 
 use PDO;
+use PDOException;
 use PDOStatement;
 use ReflectionClass;
 use ReflectionMethod;
@@ -12,6 +13,7 @@ use ReflectionProperty;
 use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\ExecutorInterface;
+use Touta\Ogam\Exception\SqlException;
 use Touta\Ogam\Hydration\HydratorFactory;
 use Touta\Ogam\Logging\QueryLogEntry;
 use Touta\Ogam\Mapping\BoundSql;
@@ -194,11 +196,19 @@ abstract class BaseExecutor implements ExecutorInterface
     protected function prepareStatement(BoundSql $boundSql, array|object|null $parameter): PDOStatement
     {
         $connection = $this->getConnection();
-        $stmt = $connection->prepare($boundSql->getSql());
 
-        $this->bindParameters($stmt, $boundSql, $parameter);
+        try {
+            $stmt = $connection->prepare($boundSql->getSql());
+            $this->bindParameters($stmt, $boundSql, $parameter);
 
-        return $stmt;
+            return $stmt;
+        } catch (PDOException $e) {
+            throw SqlException::fromPdoException(
+                $e,
+                $boundSql->getSql(),
+                $this->extractParameterValues($parameter),
+            );
+        }
     }
 
     /**

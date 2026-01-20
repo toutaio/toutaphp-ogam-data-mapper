@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Touta\Ogam\Executor;
 
 use PDO;
+use PDOException;
 use PDOStatement;
 use ReflectionProperty;
 use Touta\Ogam\Configuration;
+use Touta\Ogam\Exception\SqlException;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\MappedStatement;
 use Touta\Ogam\Transaction\TransactionInterface;
@@ -44,10 +46,19 @@ final class ReuseExecutor extends BaseExecutor
 
         $stmt = $this->getOrPrepareStatement($boundSql);
         $this->bindParameters($stmt, $boundSql, $parameter);
-        $stmt->execute();
 
-        /** @var list<array<string, mixed>> $rows */
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt->execute();
+
+            /** @var list<array<string, mixed>> $rows */
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw SqlException::fromPdoException(
+                $e,
+                $boundSql->getSql(),
+                $this->extractParameterValues($parameter),
+            );
+        }
 
         $this->recordQuery(
             $boundSql,
@@ -69,9 +80,17 @@ final class ReuseExecutor extends BaseExecutor
 
         $stmt = $this->getOrPrepareStatement($boundSql);
         $this->bindParameters($stmt, $boundSql, $parameter);
-        $stmt->execute();
 
-        $rowCount = $stmt->rowCount();
+        try {
+            $stmt->execute();
+            $rowCount = $stmt->rowCount();
+        } catch (PDOException $e) {
+            throw SqlException::fromPdoException(
+                $e,
+                $boundSql->getSql(),
+                $this->extractParameterValues($parameter),
+            );
+        }
 
         $this->recordQuery(
             $boundSql,
@@ -101,7 +120,11 @@ final class ReuseExecutor extends BaseExecutor
         $cacheKey = hash('xxh3', $sql);
 
         if (!isset($this->statementCache[$cacheKey])) {
-            $this->statementCache[$cacheKey] = $this->getConnection()->prepare($sql);
+            try {
+                $this->statementCache[$cacheKey] = $this->getConnection()->prepare($sql);
+            } catch (PDOException $e) {
+                throw SqlException::fromPdoException($e, $sql, []);
+            }
         }
 
         return $this->statementCache[$cacheKey];
