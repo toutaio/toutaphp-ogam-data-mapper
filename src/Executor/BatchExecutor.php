@@ -59,7 +59,13 @@ final class BatchExecutor extends BaseExecutor
         /** @var list<array<string, mixed>> $rows */
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $this->recordQuery($boundSql, $parameter, $startTime);
+        $this->recordQuery(
+            $boundSql,
+            $parameter,
+            $startTime,
+            $statement->getFullId(),
+            \count($rows),
+        );
 
         return $this->hydrateResults($statement, $rows);
     }

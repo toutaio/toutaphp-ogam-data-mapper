@@ -35,6 +35,9 @@ use Touta\Ogam\Sql\Node\WhereSqlNode;
  */
 final class XmlMapperParser
 {
+    /** @var array<string, DOMElement> SQL fragments indexed by ID */
+    private array $sqlFragments = [];
+
     public function __construct(
         private readonly Configuration $configuration,
     ) {}
@@ -60,7 +63,11 @@ final class XmlMapperParser
             throw new RuntimeException('Mapper must have a namespace attribute');
         }
 
-        // Parse result maps first
+        // Clear and parse SQL fragments first
+        $this->sqlFragments = [];
+        $this->parseSqlFragments($mapper);
+
+        // Parse result maps
         foreach ($this->getChildElements($mapper, 'resultMap') as $element) {
             $this->parseResultMap($element, $namespace);
         }
@@ -93,11 +100,29 @@ final class XmlMapperParser
             throw new RuntimeException('Mapper must have a namespace attribute');
         }
 
+        // Clear and parse SQL fragments first
+        $this->sqlFragments = [];
+        $this->parseSqlFragments($mapper);
+
         foreach ($this->getChildElements($mapper, 'resultMap') as $element) {
             $this->parseResultMap($element, $namespace);
         }
 
         $this->parseStatements($mapper, $namespace);
+    }
+
+    /**
+     * Parse all <sql> elements and store them for <include> resolution.
+     */
+    private function parseSqlFragments(DOMElement $mapper): void
+    {
+        foreach ($this->getChildElements($mapper, 'sql') as $element) {
+            $id = $element->getAttribute('id');
+
+            if ($id !== '') {
+                $this->sqlFragments[$id] = $element;
+            }
+        }
     }
 
     private function loadXml(string $path): DOMDocument
@@ -370,6 +395,7 @@ final class XmlMapperParser
             'set' => $this->parseSetNode($node),
             'trim' => $this->parseTrimNode($node),
             'bind' => $this->parseBindNode($node),
+            'include' => $this->parseIncludeNode($node),
             default => null,
         };
     }
@@ -454,6 +480,27 @@ final class XmlMapperParser
         $value = $element->getAttribute('value');
 
         return new BindSqlNode($name, $value);
+    }
+
+    /**
+     * Parse an <include> element by resolving the referenced SQL fragment.
+     */
+    private function parseIncludeNode(DOMElement $element): SqlNode
+    {
+        $refid = $element->getAttribute('refid');
+
+        if (!isset($this->sqlFragments[$refid])) {
+            throw new RuntimeException(\sprintf('SQL fragment not found: %s', $refid));
+        }
+
+        $fragment = $this->sqlFragments[$refid];
+        $children = $this->parseNodeChildren($fragment);
+
+        if (\count($children) === 1) {
+            return $children[0];
+        }
+
+        return new MixedSqlNode($children);
     }
 
     /**

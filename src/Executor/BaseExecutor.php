@@ -13,6 +13,7 @@ use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\ExecutorInterface;
 use Touta\Ogam\Hydration\HydratorFactory;
+use Touta\Ogam\Logging\QueryLogEntry;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\Hydration;
 use Touta\Ogam\Mapping\MappedStatement;
@@ -29,7 +30,7 @@ abstract class BaseExecutor implements ExecutorInterface
     /** @var array<string, list<mixed>> */
     protected array $localCache = [];
 
-    /** @var array{sql: string, params: array<string, mixed>, time: float}|null */
+    /** @var array{sql: string, params: array<string, mixed>, time: float, rowCount: int|null, statementId: string|null}|null */
     protected ?array $lastQuery = null;
 
     protected HydratorFactory $hydratorFactory;
@@ -391,12 +392,39 @@ abstract class BaseExecutor implements ExecutorInterface
     /**
      * @param array<string, mixed>|object|null $parameter
      */
-    protected function recordQuery(BoundSql $boundSql, array|object|null $parameter, float $startTime): void
-    {
+    protected function recordQuery(
+        BoundSql $boundSql,
+        array|object|null $parameter,
+        float $startTime,
+        ?string $statementId = null,
+        ?int $rowCount = null,
+    ): void {
+        $executionTimeMs = (microtime(true) - $startTime) * 1000;
+        $params = $this->extractParameterValues($parameter);
+
         $this->lastQuery = [
             'sql' => $boundSql->getSql(),
-            'params' => $this->extractParameterValues($parameter),
-            'time' => microtime(true) - $startTime,
+            'params' => $params,
+            'time' => $executionTimeMs / 1000, // Keep in seconds for backward compatibility
+            'rowCount' => $rowCount,
+            'statementId' => $statementId,
         ];
+
+        // Log to QueryLogger if debug mode is enabled
+        if ($this->configuration->isDebugMode()) {
+            $logger = $this->configuration->getQueryLogger();
+
+            if ($logger !== null) {
+                $entry = new QueryLogEntry(
+                    $boundSql->getSql(),
+                    $params,
+                    $executionTimeMs,
+                    $rowCount,
+                    $statementId,
+                );
+
+                $logger->log($entry);
+            }
+        }
     }
 }

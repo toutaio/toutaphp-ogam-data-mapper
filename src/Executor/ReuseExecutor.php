@@ -49,7 +49,13 @@ final class ReuseExecutor extends BaseExecutor
         /** @var list<array<string, mixed>> $rows */
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $this->recordQuery($boundSql, $parameter, $startTime);
+        $this->recordQuery(
+            $boundSql,
+            $parameter,
+            $startTime,
+            $statement->getFullId(),
+            \count($rows),
+        );
 
         return $this->hydrateResults($statement, $rows);
     }
@@ -65,14 +71,22 @@ final class ReuseExecutor extends BaseExecutor
         $this->bindParameters($stmt, $boundSql, $parameter);
         $stmt->execute();
 
-        $this->recordQuery($boundSql, $parameter, $startTime);
+        $rowCount = $stmt->rowCount();
+
+        $this->recordQuery(
+            $boundSql,
+            $parameter,
+            $startTime,
+            $statement->getFullId(),
+            $rowCount,
+        );
 
         // Handle generated keys
         if ($statement->isUseGeneratedKeys() && $parameter !== null) {
             $this->setGeneratedKey($statement, $parameter);
         }
 
-        return $stmt->rowCount();
+        return $rowCount;
     }
 
     protected function doFlushStatements(): array

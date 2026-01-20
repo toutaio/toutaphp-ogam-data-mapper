@@ -991,6 +991,96 @@ final class XmlMapperParserTest extends TestCase
         $this->assertNotNull($statement);
     }
 
+    public function testParseSqlFragment(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <sql id="columns">
+                    id, name, email
+                </sql>
+                <select id="findAll">
+                    SELECT <include refid="columns"/> FROM users
+                </select>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $statement = $this->configuration->getMappedStatement('UserMapper.findAll');
+        $this->assertNotNull($statement);
+
+        // Get bound SQL to verify include was resolved
+        $sqlSource = $statement->getSqlSource();
+        $this->assertNotNull($sqlSource);
+
+        $boundSql = $sqlSource->getBoundSql([]);
+        $this->assertStringContainsString('id, name, email', $boundSql->getSql());
+    }
+
+    public function testParseSqlFragmentWithDynamicContent(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <sql id="conditions">
+                    <if test="name != null">
+                        AND name = #{name}
+                    </if>
+                </sql>
+                <select id="findWithConditions">
+                    SELECT * FROM users WHERE 1=1 <include refid="conditions"/>
+                </select>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $statement = $this->configuration->getMappedStatement('UserMapper.findWithConditions');
+        $this->assertNotNull($statement);
+    }
+
+    public function testParseMultipleSqlFragments(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <sql id="columns">id, name, email</sql>
+                <sql id="table">users</sql>
+                <select id="findAll">
+                    SELECT <include refid="columns"/> FROM <include refid="table"/>
+                </select>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $statement = $this->configuration->getMappedStatement('UserMapper.findAll');
+        $this->assertNotNull($statement);
+
+        $sqlSource = $statement->getSqlSource();
+        $boundSql = $sqlSource->getBoundSql([]);
+        $this->assertStringContainsString('id, name, email', $boundSql->getSql());
+        $this->assertStringContainsString('users', $boundSql->getSql());
+    }
+
+    public function testIncludeNonExistentFragmentThrows(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findAll">
+                    SELECT <include refid="nonExistent"/> FROM users
+                </select>
+            </mapper>
+            XML;
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('SQL fragment not found: nonExistent');
+
+        $this->parser->parseXml($xml);
+    }
+
     private function removeDirectory(string $dir): void
     {
         if (!is_dir($dir)) {
