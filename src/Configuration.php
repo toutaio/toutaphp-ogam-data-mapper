@@ -9,6 +9,7 @@ use DateTimeInterface;
 use Touta\Ogam\Contract\TypeHandlerInterface;
 use Touta\Ogam\DataSource\Environment;
 use Touta\Ogam\Executor\ExecutorType;
+use Touta\Ogam\Logging\QueryLoggerInterface;
 use Touta\Ogam\Mapping\MappedStatement;
 use Touta\Ogam\Mapping\ResultMap;
 use Touta\Ogam\Type\TypeHandlerRegistry;
@@ -37,6 +38,8 @@ final class Configuration
     private string $defaultEnvironment = 'default';
 
     private bool $debugMode = false;
+
+    private ?QueryLoggerInterface $queryLogger = null;
 
     /** @var array<string, Environment> */
     private array $environments = [];
@@ -155,6 +158,18 @@ final class Configuration
     public function setDebugMode(bool $debugMode): self
     {
         $this->debugMode = $debugMode;
+
+        return $this;
+    }
+
+    public function getQueryLogger(): ?QueryLoggerInterface
+    {
+        return $this->queryLogger;
+    }
+
+    public function setQueryLogger(?QueryLoggerInterface $queryLogger): self
+    {
+        $this->queryLogger = $queryLogger;
 
         return $this;
     }

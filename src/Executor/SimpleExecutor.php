@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Touta\Ogam\Executor;
 
 use PDO;
+use PDOException;
 use ReflectionProperty;
+use Touta\Ogam\Exception\SqlException;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\MappedStatement;
 
@@ -24,12 +26,27 @@ final class SimpleExecutor extends BaseExecutor
         $startTime = microtime(true);
 
         $stmt = $this->prepareStatement($boundSql, $parameter);
-        $stmt->execute();
 
-        /** @var list<array<string, mixed>> $rows */
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt->execute();
 
-        $this->recordQuery($boundSql, $parameter, $startTime);
+            /** @var list<array<string, mixed>> $rows */
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw SqlException::fromPdoException(
+                $e,
+                $boundSql->getSql(),
+                $this->extractParameterValues($parameter),
+            );
+        }
+
+        $this->recordQuery(
+            $boundSql,
+            $parameter,
+            $startTime,
+            $statement->getFullId(),
+            \count($rows),
+        );
 
         return $this->hydrateResults($statement, $rows);
     }
@@ -42,16 +59,32 @@ final class SimpleExecutor extends BaseExecutor
         $startTime = microtime(true);
 
         $stmt = $this->prepareStatement($boundSql, $parameter);
-        $stmt->execute();
 
-        $this->recordQuery($boundSql, $parameter, $startTime);
+        try {
+            $stmt->execute();
+            $rowCount = $stmt->rowCount();
+        } catch (PDOException $e) {
+            throw SqlException::fromPdoException(
+                $e,
+                $boundSql->getSql(),
+                $this->extractParameterValues($parameter),
+            );
+        }
+
+        $this->recordQuery(
+            $boundSql,
+            $parameter,
+            $startTime,
+            $statement->getFullId(),
+            $rowCount,
+        );
 
         // Handle generated keys
         if ($statement->isUseGeneratedKeys() && $parameter !== null) {
             $this->setGeneratedKey($statement, $parameter);
         }
 
-        return $stmt->rowCount();
+        return $rowCount;
     }
 
     protected function doFlushStatements(): array

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Touta\Ogam\Executor;
 
 use PDO;
+use PDOException;
 use PDOStatement;
 use Touta\Ogam\Configuration;
+use Touta\Ogam\Exception\SqlException;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\MappedStatement;
 use Touta\Ogam\Transaction\TransactionInterface;
@@ -52,14 +54,28 @@ final class BatchExecutor extends BaseExecutor
 
         $startTime = microtime(true);
 
-        $stmt = $this->getConnection()->prepare($boundSql->getSql());
-        $this->bindParameters($stmt, $boundSql, $parameter);
-        $stmt->execute();
+        try {
+            $stmt = $this->getConnection()->prepare($boundSql->getSql());
+            $this->bindParameters($stmt, $boundSql, $parameter);
+            $stmt->execute();
 
-        /** @var list<array<string, mixed>> $rows */
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            /** @var list<array<string, mixed>> $rows */
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw SqlException::fromPdoException(
+                $e,
+                $boundSql->getSql(),
+                $this->extractParameterValues($parameter),
+            );
+        }
 
-        $this->recordQuery($boundSql, $parameter, $startTime);
+        $this->recordQuery(
+            $boundSql,
+            $parameter,
+            $startTime,
+            $statement->getFullId(),
+            \count($rows),
+        );
 
         return $this->hydrateResults($statement, $rows);
     }
@@ -86,7 +102,16 @@ final class BatchExecutor extends BaseExecutor
 
         if ($stmt !== null) {
             $this->bindParameters($stmt, $boundSql, $parameter);
-            $stmt->execute();
+
+            try {
+                $stmt->execute();
+            } catch (PDOException $e) {
+                throw SqlException::fromPdoException(
+                    $e,
+                    $boundSql->getSql(),
+                    $this->extractParameterValues($parameter),
+                );
+            }
         }
 
         // Return a placeholder; actual counts are returned by flushStatements()
@@ -115,7 +140,11 @@ final class BatchExecutor extends BaseExecutor
         $cacheKey = hash('xxh3', $sql);
 
         if (!isset($this->statementCache[$cacheKey])) {
-            $this->statementCache[$cacheKey] = $this->getConnection()->prepare($sql);
+            try {
+                $this->statementCache[$cacheKey] = $this->getConnection()->prepare($sql);
+            } catch (PDOException $e) {
+                throw SqlException::fromPdoException($e, $sql, []);
+            }
         }
 
         return $this->statementCache[$cacheKey];
