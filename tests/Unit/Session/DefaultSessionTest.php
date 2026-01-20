@@ -2,24 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Touta\Ogam\Tests\Unit\Session;
+// Define test mapper interfaces in their own namespace
+namespace App\Mapper
+{
+    interface UserMapper {}
+    interface PostMapper {}
+}
 
-use Generator;
-use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
-use stdClass;
-use Touta\Ogam\Configuration;
-use Touta\Ogam\Contract\ExecutorInterface;
-use Touta\Ogam\Mapping\BoundSql;
-use Touta\Ogam\Mapping\Hydration;
-use Touta\Ogam\Mapping\MappedStatement;
-use Touta\Ogam\Mapping\StatementType;
-use Touta\Ogam\Session\DefaultSession;
-use Touta\Ogam\Session\MapperProxy;
-use Touta\Ogam\Sql\SqlSource;
+namespace Touta\Ogam\Tests\Unit\Session
+{
+    use Generator;
+    use InvalidArgumentException;
+    use PHPUnit\Framework\TestCase;
+    use RuntimeException;
+    use stdClass;
+    use Touta\Ogam\Configuration;
+    use Touta\Ogam\Contract\ExecutorInterface;
+    use Touta\Ogam\Mapping\BoundSql;
+    use Touta\Ogam\Mapping\Hydration;
+    use Touta\Ogam\Mapping\MappedStatement;
+    use Touta\Ogam\Mapping\StatementType;
+    use Touta\Ogam\Session\DefaultSession;
+    use Touta\Ogam\Session\MapperProxy;
+    use Touta\Ogam\Sql\SqlSource;
 
-final class DefaultSessionTest extends TestCase
+    final class DefaultSessionTest extends TestCase
 {
     private Configuration $configuration;
     private ExecutorInterface $executor;
@@ -27,7 +34,7 @@ final class DefaultSessionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->configuration = $this->createMock(Configuration::class);
+        $this->configuration = new Configuration();
         $this->executor = $this->createMock(ExecutorInterface::class);
         $this->session = new DefaultSession($this->configuration, $this->executor);
     }
@@ -36,10 +43,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('findById', 'UserMapper', StatementType::SELECT, 'SELECT * FROM users WHERE id = ?');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findById')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -55,10 +59,7 @@ final class DefaultSessionTest extends TestCase
         $statement = new MappedStatement('findById', 'UserMapper', StatementType::SELECT, 'SELECT * FROM users WHERE id = ?');
         $expectedResult = ['id' => 1, 'name' => 'John'];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findById')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -73,10 +74,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('findAll', 'UserMapper', StatementType::SELECT, 'SELECT * FROM users');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -95,10 +93,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('findAll', 'UserMapper', StatementType::SELECT, 'SELECT * FROM users');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -119,10 +114,7 @@ final class DefaultSessionTest extends TestCase
             ['id' => 3, 'name' => 'Bob'],
         ];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -143,10 +135,7 @@ final class DefaultSessionTest extends TestCase
             hydration: Hydration::OBJECT
         );
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -159,12 +148,7 @@ final class DefaultSessionTest extends TestCase
 
     public function testSelectListThrowsExceptionWhenStatementNotFound(): void
     {
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('Unknown.statement')
-            ->willReturn(null);
-
-        $this->expectException(InvalidArgumentException::class);
+                $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Mapped statement "Unknown.statement" not found');
 
         $this->session->selectList('Unknown.statement');
@@ -184,10 +168,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('findAll', 'UserMapper', StatementType::SELECT, 'SELECT * FROM users');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -208,10 +189,7 @@ final class DefaultSessionTest extends TestCase
             ['id' => 3, 'name' => 'Bob'],
         ];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -253,10 +231,7 @@ final class DefaultSessionTest extends TestCase
 
         $results = [$user1, $user2];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -283,10 +258,7 @@ final class DefaultSessionTest extends TestCase
 
         $results = [$user1, $user2];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -306,10 +278,7 @@ final class DefaultSessionTest extends TestCase
             ['name' => 'John'],
         ];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -330,10 +299,7 @@ final class DefaultSessionTest extends TestCase
 
         $results = [$user];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -354,10 +320,7 @@ final class DefaultSessionTest extends TestCase
             ['id' => 3, 'name' => 'Bob'],
         ];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -379,10 +342,7 @@ final class DefaultSessionTest extends TestCase
             ['id' => 2, 'name' => 'Jane'],
         ];
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findAll')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -410,10 +370,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('insertUser', 'UserMapper', StatementType::INSERT, 'INSERT INTO users (name) VALUES (?)');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.insertUser')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->expects($this->once())
@@ -429,10 +386,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('insertUser', 'UserMapper', StatementType::INSERT, 'INSERT INTO users (name) VALUES (?)');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.insertUser')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('update')
@@ -454,10 +408,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('updateUser', 'UserMapper', StatementType::UPDATE, 'UPDATE users SET name = ? WHERE id = ?');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.updateUser')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->expects($this->once())
@@ -473,10 +424,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('deleteUser', 'UserMapper', StatementType::DELETE, 'DELETE FROM users WHERE id = ?');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.deleteUser')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->expects($this->once())
@@ -492,10 +440,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('findById', 'UserMapper', StatementType::SELECT, 'SELECT * FROM users WHERE id = ?');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findById')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Statement "UserMapper.findById" is a select statement, but was used as insert');
@@ -508,10 +453,7 @@ final class DefaultSessionTest extends TestCase
         // UPDATE/INSERT/DELETE types are interchangeable for update operations
         $statement = new MappedStatement('insertOrUpdate', 'UserMapper', StatementType::INSERT, 'INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = ?');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.insertOrUpdate')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('update')
@@ -527,10 +469,7 @@ final class DefaultSessionTest extends TestCase
         // UPDATE/INSERT/DELETE types are interchangeable for update operations
         $statement = new MappedStatement('softDelete', 'UserMapper', StatementType::UPDATE, 'UPDATE users SET deleted = 1 WHERE id = ?');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.softDelete')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('update')
@@ -555,9 +494,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('insertUser', 'UserMapper', StatementType::INSERT, 'INSERT INTO users (name) VALUES (?)');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('update')
@@ -602,9 +539,7 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('insertUser', 'UserMapper', StatementType::INSERT, 'INSERT INTO users (name) VALUES (?)');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('update')
@@ -693,9 +628,7 @@ final class DefaultSessionTest extends TestCase
 
         $statement = new MappedStatement('insertUser', 'UserMapper', StatementType::INSERT, 'INSERT INTO users (name) VALUES (?)');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('update')
@@ -814,10 +747,7 @@ final class DefaultSessionTest extends TestCase
             sqlSource: $sqlSource
         );
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findById')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -835,10 +765,7 @@ final class DefaultSessionTest extends TestCase
         $parameter = new stdClass();
         $parameter->id = 1;
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.findById')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->executor
             ->method('query')
@@ -853,14 +780,12 @@ final class DefaultSessionTest extends TestCase
     {
         $statement = new MappedStatement('insertUser', 'UserMapper', StatementType::INSERT, 'INSERT INTO users (name) VALUES (?)');
 
-        $this->configuration
-            ->method('getMappedStatement')
-            ->with('UserMapper.insertUser')
-            ->willReturn($statement);
+        $this->configuration->addMappedStatement($statement);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Statement "UserMapper.insertUser" is a insert statement, but was used as select');
 
         $this->session->selectCursor('UserMapper.insertUser');
     }
+}
 }

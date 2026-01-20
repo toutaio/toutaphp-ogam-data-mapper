@@ -452,7 +452,7 @@ XML;
 
         $association = $resultMap->getAssociations()[0];
         $this->assertSame('address', $association->getProperty());
-        $this->assertSame('Address', $association->getPhpType());
+        $this->assertSame('Address', $association->getJavaType());
         $this->assertSame('addr_', $association->getColumnPrefix());
     }
 
@@ -920,7 +920,7 @@ XML;
         $resultMap = $this->configuration->getResultMap('UserMapper.UserResult');
         $this->assertNotNull($resultMap);
         $association = $resultMap->getAssociations()[0];
-        $this->assertSame('object', $association->getPhpType());
+        $this->assertSame('object', $association->getJavaType());
     }
 
     public function testParseCollectionWithoutOfType(): void

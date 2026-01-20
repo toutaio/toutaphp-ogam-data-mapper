@@ -56,6 +56,10 @@ final class XmlConfigurationParser
     {
         $this->basePath = $basePath;
 
+        if (trim($xml) === '') {
+            throw new RuntimeException('Failed to parse configuration XML');
+        }
+
         $doc = new DOMDocument();
         $doc->preserveWhiteSpace = false;
 
