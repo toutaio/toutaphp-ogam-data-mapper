@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Session;
 
+use BadMethodCallException;
+use InvalidArgumentException;
+use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
+use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\SessionInterface;
 use Touta\Ogam\Mapping\Hydration;
@@ -37,8 +41,8 @@ final class MapperProxy
         string $mapperInterface,
         private readonly Configuration $configuration,
     ) {
-        if (!\interface_exists($mapperInterface)) {
-            throw new \InvalidArgumentException(
+        if (!interface_exists($mapperInterface)) {
+            throw new InvalidArgumentException(
                 \sprintf('Mapper interface "%s" does not exist', $mapperInterface),
             );
         }
@@ -69,10 +73,10 @@ final class MapperProxy
     private function getMethod(string $name): ReflectionMethod
     {
         if (!isset($this->methodCache[$name])) {
-            $reflection = new \ReflectionClass($this->mapperInterface);
+            $reflection = new ReflectionClass($this->mapperInterface);
 
             if (!$reflection->hasMethod($name)) {
-                throw new \BadMethodCallException(
+                throw new BadMethodCallException(
                     \sprintf(
                         'Method "%s" does not exist in mapper interface "%s"',
                         $name,
@@ -97,7 +101,7 @@ final class MapperProxy
         $statement = $this->configuration->getMappedStatement($id);
 
         if ($statement === null) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 \sprintf('No mapped statement found for "%s"', $id),
             );
         }
@@ -121,8 +125,14 @@ final class MapperProxy
         if (\count($params) === 1 && \count($arguments) === 1) {
             $arg = $arguments[0];
 
-            // Single object or array parameter
-            if (\is_object($arg) || \is_array($arg)) {
+            // Single object parameter
+            if (\is_object($arg)) {
+                return $arg;
+            }
+
+            // Single array parameter - ensure string keys
+            if (\is_array($arg)) {
+                /** @var array<string, mixed> $arg */
                 return $arg;
             }
         }

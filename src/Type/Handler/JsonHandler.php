@@ -15,20 +15,25 @@ use Touta\Ogam\Type\BaseTypeHandler;
  */
 final class JsonHandler extends BaseTypeHandler
 {
+    /** @var int<1, max> */
+    private readonly int $depth;
+
     /**
      * @param bool $associative Whether to decode JSON as associative arrays (default: true)
      * @param int $encodeFlags JSON encode flags
      * @param int $decodeFlags JSON decode flags
-     * @param int $depth Maximum depth
+     * @param int<1, max> $depth Maximum depth
      */
     public function __construct(
         private readonly bool $associative = true,
         private readonly int $encodeFlags = JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE,
         private readonly int $decodeFlags = JSON_THROW_ON_ERROR,
-        private readonly int $depth = 512,
-    ) {}
+        int $depth = 512,
+    ) {
+        $this->depth = $depth > 0 ? $depth : 512;
+    }
 
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return 'array';
     }
@@ -43,7 +48,7 @@ final class JsonHandler extends BaseTypeHandler
             // Already JSON string
             $json = $value;
         } else {
-            $json = \json_encode($value, $this->encodeFlags, $this->depth);
+            $json = json_encode($value, $this->encodeFlags, $this->depth);
         }
 
         $statement->bindValue($index, $json, PDO::PARAM_STR);
@@ -60,6 +65,6 @@ final class JsonHandler extends BaseTypeHandler
             return $value;
         }
 
-        return \json_decode($value, $this->associative, $this->depth, $this->decodeFlags);
+        return json_decode($value, $this->associative, $this->depth, $this->decodeFlags);
     }
 }

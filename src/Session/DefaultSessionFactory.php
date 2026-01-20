@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Session;
 
+use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Contract\SessionFactoryInterface;
 use Touta\Ogam\Contract\SessionInterface;
@@ -73,7 +74,7 @@ final class DefaultSessionFactory implements SessionFactoryInterface
         $environment = $this->configuration->getEnvironment();
 
         if ($environment === null) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 \sprintf(
                     'No environment configured. Configure environment "%s" or set a different default.',
                     $this->configuration->getDefaultEnvironment(),

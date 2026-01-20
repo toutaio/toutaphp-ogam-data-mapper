@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Sql;
 
+use ReflectionProperty;
+use Stringable;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\ParameterMapping;
@@ -36,8 +38,11 @@ final class SqlSourceBuilder
     /x';
 
     public function __construct(
-        private readonly Configuration $configuration,
-    ) {}
+        Configuration $configuration,
+    ) {
+        // Configuration stored for future use (e.g., type handler resolution)
+        $_ = $configuration;
+    }
 
     /**
      * @param array<string, mixed>|object|null $parameter
@@ -51,7 +56,14 @@ final class SqlSourceBuilder
         $parameterMappings = [];
         $sql = $this->parseParameters($sql, $parameterMappings);
 
-        return new BoundSql($sql, $parameterMappings);
+        // Store merged parameters as additional parameters for foreach support
+        $additionalParameters = [];
+
+        if (\is_array($parameter)) {
+            $additionalParameters = $parameter;
+        }
+
+        return new BoundSql($sql, $parameterMappings, $additionalParameters);
     }
 
     /**
@@ -59,14 +71,18 @@ final class SqlSourceBuilder
      */
     private function substituteStrings(string $sql, array|object|null $parameter): string
     {
-        return (string) \preg_replace_callback(
+        return (string) preg_replace_callback(
             self::STRING_SUBSTITUTION_PATTERN,
             function (array $matches) use ($parameter): string {
                 $property = $matches['property'];
                 $value = $this->getPropertyValue($parameter, $property);
 
                 // Direct string substitution (be careful - SQL injection risk)
-                return $value !== null ? (string) $value : '';
+                if ($value === null) {
+                    return '';
+                }
+
+                return \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
             },
             $sql,
         );
@@ -77,7 +93,7 @@ final class SqlSourceBuilder
      */
     private function parseParameters(string $sql, array &$parameterMappings): string
     {
-        return (string) \preg_replace_callback(
+        return (string) preg_replace_callback(
             self::PARAMETER_PATTERN,
             function (array $matches) use (&$parameterMappings): string {
                 $property = $matches['property'];
@@ -103,11 +119,15 @@ final class SqlSourceBuilder
     private function parseAttributes(string $attrs): array
     {
         $result = [];
-        $pairs = \preg_split('/\s*,\s*/', \trim($attrs));
+        $pairs = preg_split('/\s*,\s*/', trim($attrs));
+
+        if ($pairs === false) {
+            return $result;
+        }
 
         foreach ($pairs as $pair) {
-            if (\preg_match('/^(\w+)\s*=\s*(.+)$/', \trim($pair), $m)) {
-                $result[$m[1]] = \trim($m[2]);
+            if (preg_match('/^(\w+)\s*=\s*(.+)$/', trim($pair), $m)) {
+                $result[$m[1]] = trim($m[2]);
             }
         }
 
@@ -120,7 +140,7 @@ final class SqlSourceBuilder
             return ParameterMode::IN;
         }
 
-        return match (\strtoupper($mode)) {
+        return match (strtoupper($mode)) {
             'IN' => ParameterMode::IN,
             'OUT' => ParameterMode::OUT,
             'INOUT' => ParameterMode::INOUT,
@@ -137,7 +157,7 @@ final class SqlSourceBuilder
             return null;
         }
 
-        $parts = \explode('.', $property);
+        $parts = explode('.', $property);
         $current = $parameter;
 
         foreach ($parts as $part) {
@@ -158,20 +178,20 @@ final class SqlSourceBuilder
 
     private function getObjectProperty(object $object, string $property): mixed
     {
-        $getter = 'get' . \ucfirst($property);
+        $getter = 'get' . ucfirst($property);
 
-        if (\method_exists($object, $getter)) {
+        if (method_exists($object, $getter)) {
             return $object->{$getter}();
         }
 
-        $isGetter = 'is' . \ucfirst($property);
+        $isGetter = 'is' . ucfirst($property);
 
-        if (\method_exists($object, $isGetter)) {
+        if (method_exists($object, $isGetter)) {
             return $object->{$isGetter}();
         }
 
-        if (\property_exists($object, $property)) {
-            $reflection = new \ReflectionProperty($object, $property);
+        if (property_exists($object, $property)) {
+            $reflection = new ReflectionProperty($object, $property);
             $reflection->setAccessible(true);
 
             return $reflection->getValue($object);

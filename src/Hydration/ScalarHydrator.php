@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Hydration;
 
+use Stringable;
 use Touta\Ogam\Contract\HydratorInterface;
 use Touta\Ogam\Mapping\ResultMap;
 use Touta\Ogam\Type\TypeHandlerRegistry;
@@ -26,7 +27,7 @@ final class ScalarHydrator implements HydratorInterface
             return null;
         }
 
-        $value = \reset($row);
+        $value = reset($row);
 
         if ($value === null || $resultType === null) {
             return $value;
@@ -49,11 +50,11 @@ final class ScalarHydrator implements HydratorInterface
 
     private function convertValue(mixed $value, string $resultType): mixed
     {
-        // Handle primitive types directly
-        return match (\strtolower($resultType)) {
-            'int', 'integer' => (int) $value,
-            'float', 'double' => (float) $value,
-            'string' => (string) $value,
+        // Handle primitive types directly with safe casts
+        return match (strtolower($resultType)) {
+            'int', 'integer' => is_numeric($value) ? (int) $value : (\is_bool($value) ? (int) $value : 0),
+            'float', 'double' => is_numeric($value) ? (float) $value : (\is_bool($value) ? (float) $value : 0.0),
+            'string' => \is_scalar($value) || $value instanceof Stringable ? (string) $value : '',
             'bool', 'boolean' => (bool) $value,
             default => $this->convertViaHandler($value, $resultType),
         };

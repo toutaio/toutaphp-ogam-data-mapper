@@ -13,7 +13,7 @@ use Touta\Ogam\Type\BaseTypeHandler;
  */
 final class BooleanHandler extends BaseTypeHandler
 {
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return 'bool';
     }
@@ -34,12 +34,12 @@ final class BooleanHandler extends BaseTypeHandler
             return $value;
         }
 
-        if (\is_numeric($value)) {
+        if (is_numeric($value)) {
             return (int) $value !== 0;
         }
 
         if (\is_string($value)) {
-            $lower = \strtolower($value);
+            $lower = strtolower($value);
 
             return \in_array($lower, ['1', 'true', 'yes', 'on', 't', 'y'], true);
         }

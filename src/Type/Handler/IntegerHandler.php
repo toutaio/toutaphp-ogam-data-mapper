@@ -13,7 +13,7 @@ use Touta\Ogam\Type\BaseTypeHandler;
  */
 final class IntegerHandler extends BaseTypeHandler
 {
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return 'int';
     }
@@ -24,11 +24,12 @@ final class IntegerHandler extends BaseTypeHandler
         mixed $value,
         ?string $sqlType,
     ): void {
-        $statement->bindValue($index, (int) $value, PDO::PARAM_INT);
+        $intValue = is_numeric($value) ? (int) $value : 0;
+        $statement->bindValue($index, $intValue, PDO::PARAM_INT);
     }
 
     protected function getNonNullResult(mixed $value): int
     {
-        return (int) $value;
+        return is_numeric($value) ? (int) $value : 0;
     }
 }

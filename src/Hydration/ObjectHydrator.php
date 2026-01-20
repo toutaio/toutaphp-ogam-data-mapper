@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Hydration;
 
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
+use ReflectionProperty;
+use RuntimeException;
 use Touta\Ogam\Contract\HydratorInterface;
 use Touta\Ogam\Mapping\ResultMap;
 use Touta\Ogam\Mapping\ResultMapping;
@@ -17,16 +22,16 @@ use Touta\Ogam\Type\TypeHandlerRegistry;
  */
 final class ObjectHydrator implements HydratorInterface
 {
-    /** @var array<string, \ReflectionClass<object>> */
+    /** @var array<string, ReflectionClass<object>> */
     private array $reflectionCache = [];
 
-    /** @var array<string, array<string, \ReflectionProperty>> */
+    /** @var array<string, array<string, ReflectionProperty>> */
     private array $propertyCache = [];
 
     /** @var array<string, array<string, string>> */
     private array $setterCache = [];
 
-    /** @var array<string, list<\ReflectionParameter>> */
+    /** @var array<string, list<ReflectionParameter>> */
     private array $constructorParamsCache = [];
 
     public function __construct(
@@ -40,15 +45,16 @@ final class ObjectHydrator implements HydratorInterface
             return $row;
         }
 
-        $type = $resultType ?? $resultMap?->getType();
+        $type = $resultType ?? ($resultMap !== null ? $resultMap->getType() : null);
 
-        if ($type === null) {
+        if ($type === null || !class_exists($type)) {
             return $row;
         }
 
         // Map columns to properties
         $propertyValues = $this->mapRowToProperties($row, $resultMap);
 
+        /** @var class-string $type */
         return $this->createObject($type, $propertyValues);
     }
 
@@ -87,8 +93,8 @@ final class ObjectHydrator implements HydratorInterface
 
             // Auto-map remaining columns if enabled
             if ($resultMap->isAutoMapping()) {
-                $mappedColumns = \array_map(
-                    static fn (ResultMapping $m) => $m->getColumn(),
+                $mappedColumns = array_map(
+                    static fn(ResultMapping $m) => $m->getColumn(),
                     $resultMap->getAllMappings(),
                 );
 
@@ -138,7 +144,7 @@ final class ObjectHydrator implements HydratorInterface
             return $column;
         }
 
-        return \lcfirst(\str_replace(' ', '', \ucwords(\str_replace('_', ' ', $column))));
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
     /**
@@ -165,12 +171,12 @@ final class ObjectHydrator implements HydratorInterface
     }
 
     /**
-     * @param \ReflectionClass<object> $reflection
+     * @param ReflectionClass<object> $reflection
      * @param array<string, mixed> $propertyValues
      */
     private function createViaConstructor(
-        \ReflectionClass $reflection,
-        \ReflectionMethod $constructor,
+        ReflectionClass $reflection,
+        ReflectionMethod $constructor,
         array &$propertyValues,
     ): object {
         $params = $this->getConstructorParams($reflection);
@@ -187,7 +193,7 @@ final class ObjectHydrator implements HydratorInterface
             } elseif ($param->allowsNull()) {
                 $args[] = null;
             } else {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     \sprintf(
                         'Cannot hydrate %s: missing required constructor parameter "%s"',
                         $reflection->getName(),
@@ -201,12 +207,12 @@ final class ObjectHydrator implements HydratorInterface
     }
 
     /**
-     * @param \ReflectionClass<object> $reflection
+     * @param ReflectionClass<object> $reflection
      * @param array<string, mixed> $propertyValues
      */
     private function setRemainingProperties(
         object $object,
-        \ReflectionClass $reflection,
+        ReflectionClass $reflection,
         array $propertyValues,
     ): void {
         $properties = $this->getProperties($reflection);
@@ -235,23 +241,23 @@ final class ObjectHydrator implements HydratorInterface
     /**
      * @param class-string $type
      *
-     * @return \ReflectionClass<object>
+     * @return ReflectionClass<object>
      */
-    private function getReflectionClass(string $type): \ReflectionClass
+    private function getReflectionClass(string $type): ReflectionClass
     {
         if (!isset($this->reflectionCache[$type])) {
-            $this->reflectionCache[$type] = new \ReflectionClass($type);
+            $this->reflectionCache[$type] = new ReflectionClass($type);
         }
 
         return $this->reflectionCache[$type];
     }
 
     /**
-     * @param \ReflectionClass<object> $reflection
+     * @param ReflectionClass<object> $reflection
      *
-     * @return array<string, \ReflectionProperty>
+     * @return array<string, ReflectionProperty>
      */
-    private function getProperties(\ReflectionClass $reflection): array
+    private function getProperties(ReflectionClass $reflection): array
     {
         $className = $reflection->getName();
 
@@ -267,22 +273,22 @@ final class ObjectHydrator implements HydratorInterface
     }
 
     /**
-     * @param \ReflectionClass<object> $reflection
+     * @param ReflectionClass<object> $reflection
      *
      * @return array<string, string>
      */
-    private function getSetters(\ReflectionClass $reflection): array
+    private function getSetters(ReflectionClass $reflection): array
     {
         $className = $reflection->getName();
 
         if (!isset($this->setterCache[$className])) {
             $this->setterCache[$className] = [];
 
-            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                 $name = $method->getName();
 
-                if (\str_starts_with($name, 'set') && $method->getNumberOfRequiredParameters() === 1) {
-                    $property = \lcfirst(\substr($name, 3));
+                if (str_starts_with($name, 'set') && $method->getNumberOfRequiredParameters() === 1) {
+                    $property = lcfirst(substr($name, 3));
                     $this->setterCache[$className][$property] = $name;
                 }
             }
@@ -292,11 +298,11 @@ final class ObjectHydrator implements HydratorInterface
     }
 
     /**
-     * @param \ReflectionClass<object> $reflection
+     * @param ReflectionClass<object> $reflection
      *
-     * @return list<\ReflectionParameter>
+     * @return list<ReflectionParameter>
      */
-    private function getConstructorParams(\ReflectionClass $reflection): array
+    private function getConstructorParams(ReflectionClass $reflection): array
     {
         $className = $reflection->getName();
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Sql;
 
+use ReflectionProperty;
 use Touta\Ogam\Configuration;
 
 /**
@@ -20,10 +21,18 @@ final class DynamicContext
 
     private int $uniqueNumber = 0;
 
+    /** @var array<string, mixed>|object|null */
+    private readonly array|object|null $parameter;
+
+    /**
+     * @param array<string, mixed>|object|null $parameter
+     */
     public function __construct(
         private readonly Configuration $configuration,
-        private readonly array|object|null $parameter,
-    ) {}
+        array|object|null $parameter,
+    ) {
+        $this->parameter = $parameter;
+    }
 
     public function appendSql(string $sql): void
     {
@@ -117,7 +126,7 @@ final class DynamicContext
         }
 
         // Handle nested property access
-        $parts = \explode('.', $expression);
+        $parts = explode('.', $expression);
         $current = $parameter;
 
         foreach ($parts as $part) {
@@ -139,22 +148,22 @@ final class DynamicContext
     private function getObjectProperty(object $object, string $property): mixed
     {
         // Try getter
-        $getter = 'get' . \ucfirst($property);
+        $getter = 'get' . ucfirst($property);
 
-        if (\method_exists($object, $getter)) {
+        if (method_exists($object, $getter)) {
             return $object->{$getter}();
         }
 
         // Try boolean getter
-        $isGetter = 'is' . \ucfirst($property);
+        $isGetter = 'is' . ucfirst($property);
 
-        if (\method_exists($object, $isGetter)) {
+        if (method_exists($object, $isGetter)) {
             return $object->{$isGetter}();
         }
 
         // Try direct property
-        if (\property_exists($object, $property)) {
-            $reflection = new \ReflectionProperty($object, $property);
+        if (property_exists($object, $property)) {
+            $reflection = new ReflectionProperty($object, $property);
             $reflection->setAccessible(true);
 
             return $reflection->getValue($object);

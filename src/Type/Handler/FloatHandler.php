@@ -13,7 +13,7 @@ use Touta\Ogam\Type\BaseTypeHandler;
  */
 final class FloatHandler extends BaseTypeHandler
 {
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
         return 'float';
     }
@@ -25,11 +25,12 @@ final class FloatHandler extends BaseTypeHandler
         ?string $sqlType,
     ): void {
         // PDO doesn't have a PARAM_FLOAT, so we use string representation
-        $statement->bindValue($index, (string) (float) $value, PDO::PARAM_STR);
+        $floatValue = is_numeric($value) ? (float) $value : 0.0;
+        $statement->bindValue($index, (string) $floatValue, PDO::PARAM_STR);
     }
 
     protected function getNonNullResult(mixed $value): float
     {
-        return (float) $value;
+        return is_numeric($value) ? (float) $value : 0.0;
     }
 }

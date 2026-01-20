@@ -22,6 +22,9 @@ final class ArrayHydrator implements HydratorInterface
         private readonly bool $mapUnderscoreToCamelCase = false,
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function hydrate(array $row, ?ResultMap $resultMap, ?string $resultType): array
     {
         if ($resultMap === null) {
@@ -65,8 +68,8 @@ final class ArrayHydrator implements HydratorInterface
 
         // Auto-map remaining columns if enabled
         if ($resultMap->isAutoMapping()) {
-            $mappedColumns = \array_map(
-                static fn (ResultMapping $m) => $m->getColumn(),
+            $mappedColumns = array_map(
+                static fn(ResultMapping $m) => $m->getColumn(),
                 $resultMap->getAllMappings(),
             );
 
@@ -109,7 +112,7 @@ final class ArrayHydrator implements HydratorInterface
             return $column;
         }
 
-        return \lcfirst(\str_replace(' ', '', \ucwords(\str_replace('_', ' ', $column))));
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
     /**

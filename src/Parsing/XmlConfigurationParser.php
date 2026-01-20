@@ -6,6 +6,7 @@ namespace Touta\Ogam\Parsing;
 
 use DOMDocument;
 use DOMElement;
+use RuntimeException;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\DataSource\Environment;
 use Touta\Ogam\DataSource\PooledDataSource;
@@ -40,7 +41,7 @@ final class XmlConfigurationParser
         $root = $xml->documentElement;
 
         if ($root === null || $root->nodeName !== 'configuration') {
-            throw new \RuntimeException('Invalid configuration: root element must be <configuration>');
+            throw new RuntimeException('Invalid configuration: root element must be <configuration>');
         }
 
         $this->parseConfiguration($root);
@@ -55,17 +56,21 @@ final class XmlConfigurationParser
     {
         $this->basePath = $basePath;
 
+        if (trim($xml) === '') {
+            throw new RuntimeException('Failed to parse configuration XML');
+        }
+
         $doc = new DOMDocument();
         $doc->preserveWhiteSpace = false;
 
         if (!@$doc->loadXML($xml)) {
-            throw new \RuntimeException('Failed to parse configuration XML');
+            throw new RuntimeException('Failed to parse configuration XML');
         }
 
         $root = $doc->documentElement;
 
         if ($root === null || $root->nodeName !== 'configuration') {
-            throw new \RuntimeException('Invalid configuration: root element must be <configuration>');
+            throw new RuntimeException('Invalid configuration: root element must be <configuration>');
         }
 
         $this->parseConfiguration($root);
@@ -75,15 +80,15 @@ final class XmlConfigurationParser
 
     private function loadXml(string $path): DOMDocument
     {
-        if (!\file_exists($path)) {
-            throw new \RuntimeException(\sprintf('Configuration file not found: %s', $path));
+        if (!file_exists($path)) {
+            throw new RuntimeException(\sprintf('Configuration file not found: %s', $path));
         }
 
         $xml = new DOMDocument();
         $xml->preserveWhiteSpace = false;
 
         if (!@$xml->load($path)) {
-            throw new \RuntimeException(\sprintf('Failed to parse configuration file: %s', $path));
+            throw new RuntimeException(\sprintf('Failed to parse configuration file: %s', $path));
         }
 
         return $xml;
@@ -170,9 +175,12 @@ final class XmlConfigurationParser
             $phpType = $handler->getAttribute('phpType');
             $handlerClass = $handler->getAttribute('handler');
 
-            if ($phpType !== '' && $handlerClass !== '' && \class_exists($handlerClass)) {
+            if ($phpType !== '' && $handlerClass !== '' && class_exists($handlerClass)) {
                 $handlerInstance = new $handlerClass();
-                $this->configuration->addTypeHandler($phpType, $handlerInstance);
+
+                if ($handlerInstance instanceof \Touta\Ogam\Contract\TypeHandlerInterface) {
+                    $this->configuration->addTypeHandler($phpType, $handlerInstance);
+                }
             }
         }
     }
@@ -213,7 +221,7 @@ final class XmlConfigurationParser
             return new ManagedTransactionFactory();
         }
 
-        $type = \strtoupper($element->getAttribute('type'));
+        $type = strtoupper($element->getAttribute('type'));
 
         return match ($type) {
             'JDBC' => new JdbcTransactionFactory(),
@@ -224,10 +232,10 @@ final class XmlConfigurationParser
     private function parseDataSource(?DOMElement $element): SimpleDataSource|PooledDataSource|UnpooledDataSource
     {
         if ($element === null) {
-            throw new \RuntimeException('Environment must have a dataSource');
+            throw new RuntimeException('Environment must have a dataSource');
         }
 
-        $type = \strtoupper($element->getAttribute('type'));
+        $type = strtoupper($element->getAttribute('type'));
 
         $properties = [];
 
@@ -266,16 +274,16 @@ final class XmlConfigurationParser
             'mysql' => \sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database),
             'pgsql' => \sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database),
             'sqlite' => \sprintf('sqlite:%s', $database),
-            default => throw new \RuntimeException(\sprintf('Unknown driver: %s', $driver)),
+            default => throw new RuntimeException(\sprintf('Unknown driver: %s', $driver)),
         };
     }
 
     private function resolveProperty(string $value): string
     {
         // Support environment variable interpolation: ${ENV_VAR}
-        return (string) \preg_replace_callback(
+        return (string) preg_replace_callback(
             '/\$\{([^}]+)\}/',
-            static fn (array $m) => \getenv($m[1]) ?: $m[0],
+            static fn(array $m) => getenv($m[1]) ?: $m[0],
             $value,
         );
     }
@@ -294,7 +302,8 @@ final class XmlConfigurationParser
 
             $class = $mapper->getAttribute('class');
 
-            if ($class !== '') {
+            if ($class !== '' && (class_exists($class) || interface_exists($class))) {
+                /** @var class-string $class */
                 $this->configuration->addMapper($class);
             }
         }
@@ -309,7 +318,7 @@ final class XmlConfigurationParser
 
     private function resolvePath(string $path): string
     {
-        if (\str_starts_with($path, '/')) {
+        if (str_starts_with($path, '/')) {
             return $path;
         }
 
@@ -322,12 +331,12 @@ final class XmlConfigurationParser
 
     private function toBool(string $value): bool
     {
-        return \in_array(\strtolower($value), ['true', '1', 'yes', 'on'], true);
+        return \in_array(strtolower($value), ['true', '1', 'yes', 'on'], true);
     }
 
     private function toExecutorType(string $value): ExecutorType
     {
-        return match (\strtoupper($value)) {
+        return match (strtoupper($value)) {
             'REUSE' => ExecutorType::REUSE,
             'BATCH' => ExecutorType::BATCH,
             default => ExecutorType::SIMPLE,

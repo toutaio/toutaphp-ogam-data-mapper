@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Cache;
 
+use BackedEnum;
+use DateTimeInterface;
+use UnitEnum;
+
 /**
  * A cache key that uniquely identifies a cached query result.
  *
@@ -29,6 +33,11 @@ final class CacheKey
         private readonly int $limit = 0,
     ) {
         $this->hash = $this->computeHash();
+    }
+
+    public function __toString(): string
+    {
+        return $this->toString();
     }
 
     public function getStatementId(): string
@@ -62,11 +71,6 @@ final class CacheKey
         return $this->hash;
     }
 
-    public function __toString(): string
-    {
-        return $this->toString();
-    }
-
     /**
      * Check if this key equals another.
      */
@@ -84,7 +88,7 @@ final class CacheKey
             'limit' => $this->limit,
         ];
 
-        return 'ogam:' . \hash('xxh3', \serialize($data));
+        return 'ogam:' . hash('xxh3', serialize($data));
     }
 
     /**
@@ -106,23 +110,23 @@ final class CacheKey
     private function serializeValue(mixed $value): mixed
     {
         if (\is_object($value)) {
-            if ($value instanceof \DateTimeInterface) {
+            if ($value instanceof DateTimeInterface) {
                 return ['__datetime' => $value->format('Y-m-d H:i:s.u')];
             }
 
-            if ($value instanceof \BackedEnum) {
+            if ($value instanceof BackedEnum) {
                 return ['__enum' => $value::class, 'value' => $value->value];
             }
 
-            if ($value instanceof \UnitEnum) {
+            if ($value instanceof UnitEnum) {
                 return ['__enum' => $value::class, 'name' => $value->name];
             }
 
-            return ['__object' => \spl_object_id($value)];
+            return ['__object' => spl_object_id($value)];
         }
 
         if (\is_array($value)) {
-            return \array_map($this->serializeValue(...), $value);
+            return array_map($this->serializeValue(...), $value);
         }
 
         return $value;

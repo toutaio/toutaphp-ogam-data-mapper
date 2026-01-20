@@ -21,13 +21,11 @@ interface SessionInterface
     /**
      * Execute a SELECT statement returning a single result.
      *
-     * @template T
-     *
      * @param string $statement The statement ID (e.g., 'UserMapper.findById')
      * @param array<string, mixed>|object|null $parameter Parameters for the query
      * @param Hydration $hydration The hydration mode
      *
-     * @return T|null The result object, or null if not found
+     * @return mixed The result object, or null if not found
      */
     public function selectOne(
         string $statement,
@@ -38,13 +36,11 @@ interface SessionInterface
     /**
      * Execute a SELECT statement returning multiple results.
      *
-     * @template T
-     *
      * @param string $statement The statement ID
      * @param array<string, mixed>|object|null $parameter Parameters for the query
      * @param Hydration $hydration The hydration mode
      *
-     * @return list<T> The list of results
+     * @return list<mixed> The list of results
      */
     public function selectList(
         string $statement,
@@ -55,14 +51,11 @@ interface SessionInterface
     /**
      * Execute a SELECT statement returning results as a map.
      *
-     * @template K
-     * @template V
-     *
      * @param string $statement The statement ID
      * @param string $mapKey The property to use as the map key
      * @param array<string, mixed>|object|null $parameter Parameters for the query
      *
-     * @return array<K, V> The results keyed by the specified property
+     * @return array<array-key, mixed> The results keyed by the specified property
      */
     public function selectMap(
         string $statement,
@@ -75,12 +68,10 @@ interface SessionInterface
      *
      * The cursor fetches rows lazily, one at a time, reducing memory usage.
      *
-     * @template T
-     *
      * @param string $statement The statement ID
      * @param array<string, mixed>|object|null $parameter Parameters for the query
      *
-     * @return iterable<T> An iterable cursor
+     * @return iterable<mixed> An iterable cursor
      */
     public function selectCursor(
         string $statement,

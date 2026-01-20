@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Tests\Unit\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Touta\Ogam\Type\Handler\BooleanHandler;
 use Touta\Ogam\Type\Handler\DateTimeHandler;
 use Touta\Ogam\Type\Handler\FloatHandler;
@@ -35,8 +39,8 @@ final class TypeHandlerRegistryTest extends TestCase
 
     public function testRegistersDateTimeHandlers(): void
     {
-        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(\DateTime::class));
-        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(\DateTimeInterface::class));
+        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(DateTime::class));
+        $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandler(DateTimeInterface::class));
     }
 
     public function testRegistersJsonHandler(): void
@@ -74,8 +78,8 @@ final class TypeHandlerRegistryTest extends TestCase
 
     public function testGetHandlerForDateTime(): void
     {
-        $dateTime = new \DateTime();
-        $dateTimeImmutable = new \DateTimeImmutable();
+        $dateTime = new DateTime();
+        $dateTimeImmutable = new DateTimeImmutable();
 
         $this->assertInstanceOf(DateTimeHandler::class, $this->registry->getHandlerForValue($dateTime));
     }
@@ -93,5 +97,56 @@ final class TypeHandlerRegistryTest extends TestCase
         $this->assertTrue($this->registry->hasHandler('int'));
         $this->assertTrue($this->registry->hasHandler('string'));
         $this->assertFalse($this->registry->hasHandler('unknown_type'));
+    }
+
+    public function testGetHandlerForArray(): void
+    {
+        $handler = $this->registry->getHandlerForValue([1, 2, 3]);
+
+        $this->assertInstanceOf(JsonHandler::class, $handler);
+    }
+
+    public function testGetHandlerForNull(): void
+    {
+        $handler = $this->registry->getHandlerForValue(null);
+
+        // Null values get the unknown handler (StringHandler)
+        $this->assertInstanceOf(StringHandler::class, $handler);
+    }
+
+    public function testRegisterOverwritesExistingHandler(): void
+    {
+        $customHandler = new IntegerHandler();
+        $this->registry->register('string', $customHandler);
+
+        $handler = $this->registry->getHandler('string');
+
+        $this->assertSame($customHandler, $handler);
+    }
+
+    public function testGetHandlerForDateTimeImmutable(): void
+    {
+        $dateTimeImmutable = new DateTimeImmutable();
+
+        $handler = $this->registry->getHandlerForValue($dateTimeImmutable);
+
+        $this->assertInstanceOf(\Touta\Ogam\Type\Handler\DateTimeImmutableHandler::class, $handler);
+    }
+
+    public function testGetHandlerForSubclass(): void
+    {
+        // DateTime is registered, so any subclass should also get DateTime handler
+        $handler = $this->registry->getHandler(DateTime::class);
+
+        $this->assertInstanceOf(DateTimeHandler::class, $handler);
+    }
+
+    public function testRegistersObjectAsStringByDefault(): void
+    {
+        $obj = new stdClass();
+
+        $handler = $this->registry->getHandlerForValue($obj);
+
+        $this->assertInstanceOf(StringHandler::class, $handler);
     }
 }

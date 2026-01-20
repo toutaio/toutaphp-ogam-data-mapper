@@ -20,13 +20,11 @@ interface ExecutorInterface
     /**
      * Execute a query statement.
      *
-     * @template T
-     *
      * @param MappedStatement $statement The mapped statement
      * @param array<string, mixed>|object|null $parameter The parameters
      * @param BoundSql $boundSql The bound SQL with parameters
      *
-     * @return list<T> The query results
+     * @return list<mixed> The query results
      */
     public function query(
         MappedStatement $statement,

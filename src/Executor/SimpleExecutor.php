@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Touta\Ogam\Executor;
 
 use PDO;
+use ReflectionProperty;
 use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\MappedStatement;
 
@@ -20,7 +21,7 @@ final class SimpleExecutor extends BaseExecutor
         array|object|null $parameter,
         BoundSql $boundSql,
     ): array {
-        $startTime = \microtime(true);
+        $startTime = microtime(true);
 
         $stmt = $this->prepareStatement($boundSql, $parameter);
         $stmt->execute();
@@ -38,7 +39,7 @@ final class SimpleExecutor extends BaseExecutor
         array|object|null $parameter,
         BoundSql $boundSql,
     ): int {
-        $startTime = \microtime(true);
+        $startTime = microtime(true);
 
         $stmt = $this->prepareStatement($boundSql, $parameter);
         $stmt->execute();
@@ -83,17 +84,17 @@ final class SimpleExecutor extends BaseExecutor
         }
 
         // Set on object
-        $setter = 'set' . \ucfirst($keyProperty);
+        $setter = 'set' . ucfirst($keyProperty);
 
-        if (\method_exists($parameter, $setter)) {
+        if (method_exists($parameter, $setter)) {
             $parameter->{$setter}($generatedId);
 
             return;
         }
 
         // Try direct property
-        if (\property_exists($parameter, $keyProperty)) {
-            $reflection = new \ReflectionProperty($parameter, $keyProperty);
+        if (property_exists($parameter, $keyProperty)) {
+            $reflection = new ReflectionProperty($parameter, $keyProperty);
 
             if (!$reflection->isReadOnly()) {
                 $reflection->setAccessible(true);

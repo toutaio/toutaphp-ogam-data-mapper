@@ -111,7 +111,14 @@ final class SqlNodeTest extends TestCase
 
         $node->apply($context);
 
-        $this->assertSame('(#{id}, #{id}, #{id})', $context->getSql());
+        // ForEach generates unique parameter names for each iteration
+        $this->assertSame('(#{__frch_id_0}, #{__frch_id_1}, #{__frch_id_2})', $context->getSql());
+
+        // Verify bindings were created with actual values
+        $bindings = $context->getBindings();
+        $this->assertSame(1, $bindings['__frch_id_0']);
+        $this->assertSame(2, $bindings['__frch_id_1']);
+        $this->assertSame(3, $bindings['__frch_id_2']);
     }
 
     public function testForEachSqlNodeWithIndex(): void
@@ -129,7 +136,13 @@ final class SqlNodeTest extends TestCase
 
         $node->apply($context);
 
-        $this->assertSame('#{item},#{item}', $context->getSql());
+        // ForEach generates unique parameter names for each iteration
+        $this->assertSame('#{__frch_item_0},#{__frch_item_1}', $context->getSql());
+
+        // Verify bindings
+        $bindings = $context->getBindings();
+        $this->assertSame('a', $bindings['__frch_item_0']);
+        $this->assertSame('b', $bindings['__frch_item_1']);
     }
 
     public function testForEachSqlNodeEmpty(): void

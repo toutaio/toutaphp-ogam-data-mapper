@@ -47,9 +47,9 @@ abstract class BaseTypeHandler implements TypeHandlerInterface
 
     public function getResultByIndex(array $row, int $columnIndex): mixed
     {
-        $values = \array_values($row);
+        $values = array_values($row);
 
-        if (!isset($values[$columnIndex])) {
+        if (!\array_key_exists($columnIndex, $values)) {
             return null;
         }
 

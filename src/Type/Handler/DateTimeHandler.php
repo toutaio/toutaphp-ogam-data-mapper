@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Type\Handler;
 
+use DateTime;
 use DateTimeInterface;
 use PDO;
 use PDOStatement;
+use Stringable;
 use Touta\Ogam\Type\BaseTypeHandler;
 
 /**
@@ -22,9 +24,9 @@ final class DateTimeHandler extends BaseTypeHandler
         private readonly string $format = self::DEFAULT_FORMAT,
     ) {}
 
-    public function getPhpType(): ?string
+    public function getPhpType(): string
     {
-        return \DateTime::class;
+        return DateTime::class;
     }
 
     protected function setNonNullParameter(
@@ -36,28 +38,29 @@ final class DateTimeHandler extends BaseTypeHandler
         if ($value instanceof DateTimeInterface) {
             $formatted = $value->format($this->format);
         } else {
-            $formatted = (string) $value;
+            $formatted = \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
         }
 
         $statement->bindValue($index, $formatted, PDO::PARAM_STR);
     }
 
-    protected function getNonNullResult(mixed $value): \DateTime
+    protected function getNonNullResult(mixed $value): DateTime
     {
-        if ($value instanceof \DateTime) {
+        if ($value instanceof DateTime) {
             return $value;
         }
 
         if ($value instanceof DateTimeInterface) {
-            return \DateTime::createFromInterface($value);
+            return DateTime::createFromInterface($value);
         }
 
         // Try parsing as string
-        $dateTime = \DateTime::createFromFormat($this->format, (string) $value);
+        $stringValue = \is_scalar($value) || $value instanceof Stringable ? (string) $value : '';
+        $dateTime = DateTime::createFromFormat($this->format, $stringValue);
 
         if ($dateTime === false) {
             // Fall back to natural parsing
-            $dateTime = new \DateTime((string) $value);
+            $dateTime = new DateTime($stringValue);
         }
 
         return $dateTime;

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Touta\Ogam\Contract\TypeHandlerInterface;
 use Touta\Ogam\Type\Handler\BooleanHandler;
 use Touta\Ogam\Type\Handler\DateTimeHandler;
@@ -13,6 +16,7 @@ use Touta\Ogam\Type\Handler\FloatHandler;
 use Touta\Ogam\Type\Handler\IntegerHandler;
 use Touta\Ogam\Type\Handler\JsonHandler;
 use Touta\Ogam\Type\Handler\StringHandler;
+use UnitEnum;
 
 /**
  * Registry for type handlers.
@@ -44,7 +48,7 @@ final class TypeHandlerRegistry
      */
     public function register(string $phpType, TypeHandlerInterface $handler): void
     {
-        $this->handlers[\strtolower($phpType)] = $handler;
+        $this->handlers[strtolower($phpType)] = $handler;
     }
 
     /**
@@ -56,20 +60,20 @@ final class TypeHandlerRegistry
      */
     public function getHandler(string $phpType): TypeHandlerInterface
     {
-        $normalizedType = \strtolower($phpType);
+        $normalizedType = strtolower($phpType);
 
         if (isset($this->handlers[$normalizedType])) {
             return $this->handlers[$normalizedType];
         }
 
         // Check if it's an enum
-        if (\enum_exists($phpType)) {
+        if (enum_exists($phpType)) {
             return $this->getEnumHandler($phpType);
         }
 
         // Check if it's a subclass of a registered type
         foreach ($this->handlers as $registeredType => $handler) {
-            if (\class_exists($phpType) && \class_exists($registeredType) && \is_a($phpType, $registeredType, true)) {
+            if (class_exists($phpType) && class_exists($registeredType) && is_a($phpType, $registeredType, true)) {
                 return $handler;
             }
         }
@@ -90,34 +94,34 @@ final class TypeHandlerRegistry
             return $this->unknownHandler;
         }
 
-        $type = \get_debug_type($value);
+        $type = get_debug_type($value);
 
         // Handle specific object types
         if (\is_object($value)) {
-            $class = $value::class;
-
-            if ($value instanceof \BackedEnum || $value instanceof \UnitEnum) {
-                return $this->getEnumHandler($class);
+            if ($value instanceof UnitEnum) {
+                return $this->getEnumHandler($value::class);
             }
 
-            if ($value instanceof \DateTimeImmutable) {
-                return $this->handlers[\strtolower(\DateTimeImmutable::class)]
-                    ?? $this->handlers[\strtolower(\DateTimeInterface::class)]
+            $class = $value::class;
+
+            if ($value instanceof DateTimeImmutable) {
+                return $this->handlers[strtolower(DateTimeImmutable::class)]
+                    ?? $this->handlers[strtolower(DateTimeInterface::class)]
                     ?? $this->unknownHandler;
             }
 
-            if ($value instanceof \DateTimeInterface) {
-                return $this->handlers[\strtolower(\DateTimeInterface::class)]
+            if ($value instanceof DateTimeInterface) {
+                return $this->handlers[strtolower(DateTimeInterface::class)]
                     ?? $this->unknownHandler;
             }
 
             // Check for registered class handlers
-            if (isset($this->handlers[\strtolower($class)])) {
-                return $this->handlers[\strtolower($class)];
+            if (isset($this->handlers[strtolower($class)])) {
+                return $this->handlers[strtolower($class)];
             }
         }
 
-        return $this->handlers[\strtolower($type)] ?? $this->unknownHandler;
+        return $this->handlers[strtolower($type)] ?? $this->unknownHandler;
     }
 
     /**
@@ -127,13 +131,13 @@ final class TypeHandlerRegistry
      */
     public function hasHandler(string $phpType): bool
     {
-        $normalizedType = \strtolower($phpType);
+        $normalizedType = strtolower($phpType);
 
         if (isset($this->handlers[$normalizedType])) {
             return true;
         }
 
-        if (\enum_exists($phpType)) {
+        if (enum_exists($phpType)) {
             return true;
         }
 
@@ -169,7 +173,7 @@ final class TypeHandlerRegistry
     /**
      * Get or create an enum handler for the given enum class.
      *
-     * @param class-string $enumClass The enum class name
+     * @param class-string<UnitEnum> $enumClass The enum class name
      */
     private function getEnumHandler(string $enumClass): TypeHandlerInterface
     {
@@ -192,9 +196,9 @@ final class TypeHandlerRegistry
         $this->register('boolean', new BooleanHandler());
 
         // Date/Time types
-        $this->register(\DateTimeInterface::class, new DateTimeHandler());
-        $this->register(\DateTime::class, new DateTimeHandler());
-        $this->register(\DateTimeImmutable::class, new DateTimeImmutableHandler());
+        $this->register(DateTimeInterface::class, new DateTimeHandler());
+        $this->register(DateTime::class, new DateTimeHandler());
+        $this->register(DateTimeImmutable::class, new DateTimeImmutableHandler());
 
         // JSON type
         $this->register('json', new JsonHandler());
