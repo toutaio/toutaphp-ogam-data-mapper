@@ -26,7 +26,7 @@
 ## Installation
 
 ```bash
-composer require touta/ogam
+composer require toutaphp/ogam-data-mapper
 ```
 
 ## Quick Start
@@ -35,34 +35,69 @@ composer require touta/ogam
 
 ```php
 <?php
+namespace App\Entities;
 
 class User
 {
     public function __construct(
         public int $id,
-        public string $username,
+        public string $name,
         public string $email,
-        public Status $status,
-        public DateTimeImmutable $createdAt,
-    ) {}
+        public DateTimeImmutable|null $email_verified_at,
+        public string $password,
+        public string|null $remember_token,
+        public datetime $created_at,
+        public datetime $updated_at,
+    )
+    {}
 }
 ```
 
-### 2. Create XML Mapper
+### 2. Data mapper configuration
+```xml
+<!-- config/ogam.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <typeAliases>
+        <typeAlias alias="User" type="App\Entity\User"/>
+    </typeAliases>
+    <typeHandlers>
+        <typeHandler javaType="App\Enum\Status" handler="App\Handlers\StatusTypeHandler"/>
+    </typeHandlers>
+    <environments default="development">
+        <environment id="development">
+            <dataSource type="POOLED">
+                <property name="driver" value="mysql"/>
+                <property name="host" value=""/>
+                <property name="port" value=""/>
+                <property name="dbname" value=""/>
+                <property name="username" value=""/>
+                <property name="password" value=""/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="../database/mappers/UserMapper.xml"/>
+    </mappers>
+
+</configuration>
+```
+
+### 3. Create XML Mapper
 
 ```xml
 <!-- mappers/UserMapper.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="App\Mapper\UserMapper">
+<mapper namespace="App\Mappers\UserMapper">
 
     <select id="findById" resultType="App\Entity\User">
-        SELECT id, username, email, status, created_at
+        SELECT id, name, email, email_verified_at, password, remember_token, created_at, updated_at
         FROM users
         WHERE id = #{id}
     </select>
 
     <select id="findByStatus" resultType="App\Entity\User">
-        SELECT id, username, email, status, created_at
+        SELECT id, name, email, email_verified_at, password, remember_token, created_at, updated_at
         FROM users
         <where>
             <if test="status != null">
@@ -72,21 +107,24 @@ class User
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (username, email, status, created_at)
-        VALUES (#{username}, #{email}, #{status}, #{createdAt})
+        INSERT INTO users (name, email, email_verified_at, password, remember_token, created_at, updated_at)
+        VALUES (#{name}, #{email}, #{emailVerifiedAt}, #{password}, #{rememberToken}, #{createdAt}, #{updatedAt})
     </insert>
 
 </mapper>
 ```
 
-### 3. Define Mapper Interface
+### 4. Define Mapper Interface
 
 ```php
 <?php
 
-use Touta\Ogam\Attribute\Mapper;
+namespace App\Mappers;
 
-#[Mapper(resource: 'mappers/UserMapper.xml')]
+use Touta\Ogam\Attribute\Mapper;
+use App\Entities\User;
+
+#[Mapper(resource: 'database/mappers/UserMapper.xml')]
 interface UserMapper
 {
     public function findById(int $id): ?User;
@@ -95,7 +133,7 @@ interface UserMapper
 }
 ```
 
-### 4. Use the Mapper
+### 5. Use the Mapper
 
 ```php
 <?php
@@ -104,7 +142,7 @@ use Touta\Ogam\SessionFactoryBuilder;
 
 // Build session factory
 $factory = (new SessionFactoryBuilder())
-    ->withXmlConfig('config/ogam.xml')
+    ->withConfiguration(base_path('config/ogam.xml'))
     ->build();
 
 // Open session
