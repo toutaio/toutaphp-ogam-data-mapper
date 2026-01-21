@@ -92,7 +92,14 @@ final class Psr6CacheAdapter implements CacheInterface
     {
         $keyString = $this->prefix . $key->toString();
 
-        // Replace reserved PSR-6 characters with underscores
-        return preg_replace('/[{}()\/\\\\@:]/', '_', $keyString) ?? $keyString;
+        // Replace reserved PSR-6 characters with underscores.
+        // preg_replace() should not fail with this static pattern, but fall back to the original key if it does.
+        $normalized = preg_replace('/[{}()\/\\\\@:]/', '_', $keyString);
+
+        if ($normalized === null) {
+            return $keyString;
+        }
+
+        return $normalized;
     }
 }
