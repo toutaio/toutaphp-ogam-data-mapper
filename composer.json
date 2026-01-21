@@ -21,14 +21,14 @@
     "homepage": "https://github.com/toutaio/toutaphp-ogam-data-mapper",
     "require": {
         "php": ">=8.3",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "psr/cache": "^3.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.64",
         "pestphp/pest": "^3.0",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^11.0",
-        "psr/cache": "^3.0",
         "symfony/console": "^7.0"
     },
     "autoload": {
