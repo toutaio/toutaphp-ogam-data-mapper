@@ -252,7 +252,13 @@ final class ObjectHydrator implements HydratorInterface
             $idParts[] = \is_scalar($value) ? (string) $value : '';
         }
 
-        return implode('_', $idParts);
+        $encoded = json_encode($idParts);
+
+        if ($encoded === false) {
+            throw new RuntimeException('Failed to encode ID parts.');
+        }
+
+        return $encoded;
     }
 
     /**
