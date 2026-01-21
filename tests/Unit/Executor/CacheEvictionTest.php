@@ -79,7 +79,6 @@ final class CacheEvictionTest extends TestCase
         $this->assertCount(2, $result1);
 
         // Commit - should clear local cache
-        $this->pdo->beginTransaction();
         $this->executor->commit(true);
 
         // Insert a new row
