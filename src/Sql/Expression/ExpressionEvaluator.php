@@ -520,8 +520,8 @@ final class ExpressionEvaluator
         return match ($operator) {
             '===' => $left === $right,
             '!==' => $left !== $right,
-            '==' => $left === $right,
-            '!=' => $left !== $right,
+            '==' => $left == $right,
+            '!=' => $left != $right,
             '<' => $left < $right,
             '>' => $left > $right,
             '<=' => $left <= $right,
