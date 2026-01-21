@@ -13,8 +13,8 @@ use Touta\Ogam\DataSource\PooledDataSource;
 use Touta\Ogam\DataSource\SimpleDataSource;
 use Touta\Ogam\DataSource\UnpooledDataSource;
 use Touta\Ogam\Executor\ExecutorType;
-use Touta\Ogam\Transaction\PdoTransactionFactory;
 use Touta\Ogam\Transaction\ManagedTransactionFactory;
+use Touta\Ogam\Transaction\PdoTransactionFactory;
 
 /**
  * Parses the main Ogam configuration XML file.

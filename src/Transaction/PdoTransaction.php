@@ -137,8 +137,8 @@ final class PdoTransaction implements TransactionInterface
 
         // When rolling back to a savepoint, all savepoints created after it
         // should be invalidated and removed from the internal tracking.
-        $savepointNames = \array_keys($this->savepoints);
-        $position = \array_search($name, $savepointNames, true);
+        $savepointNames = array_keys($this->savepoints);
+        $position = array_search($name, $savepointNames, true);
 
         if ($position !== false) {
             $count = \count($savepointNames);
