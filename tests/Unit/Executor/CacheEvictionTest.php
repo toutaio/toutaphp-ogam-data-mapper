@@ -100,7 +100,6 @@ final class CacheEvictionTest extends TestCase
         $this->assertCount(2, $result1);
 
         // Rollback - should clear local cache
-        $this->pdo->beginTransaction();
         $this->executor->rollback(true);
 
         // Insert a new row

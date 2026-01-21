@@ -15,6 +15,11 @@ use PDOStatement;
  * making it suitable for processing large result sets without
  * consuming excessive memory.
  *
+ * IMPORTANT: This is a forward-only cursor. PDOStatement cannot be rewound
+ * once fetching has started. Calling rewind() after iteration will throw
+ * an exception. If you need to iterate multiple times, fetch all results
+ * into an array first.
+ *
  * @template T
  *
  * @implements CursorInterface<T>
@@ -24,6 +29,8 @@ final class PdoCursor implements CursorInterface
     private bool $closed = false;
 
     private int $index = -1;
+
+    private bool $iterationStarted = false;
 
     /** @var array<string, mixed>|false|null */
     private array|false|null $currentRow = null;
@@ -71,6 +78,9 @@ final class PdoCursor implements CursorInterface
             return;
         }
 
+        // Mark that iteration has started (after the initial rewind)
+        $this->iterationStarted = true;
+
         /** @var array<string, mixed>|false $row */
         $row = $this->statement->fetch(PDO::FETCH_ASSOC);
         $this->currentRow = $row;
@@ -86,6 +96,15 @@ final class PdoCursor implements CursorInterface
             $this->currentRow = null;
 
             return;
+        }
+
+        // PDOStatement cannot be rewound - it's forward-only
+        // Throw an exception if rewind is called after iteration has started
+        if ($this->iterationStarted) {
+            throw new \RuntimeException(
+                'Cannot rewind cursor: PDOStatement is forward-only. ' .
+                'If you need to iterate multiple times, fetch all results into an array first.'
+            );
         }
 
         // Reset index

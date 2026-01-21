@@ -95,10 +95,11 @@ final class PdoTransaction implements TransactionInterface
             $name = 'ogam_savepoint_' . ++$this->savepointCounter;
         }
 
-        $this->connection->exec(\sprintf('SAVEPOINT %s', $name));
-        $this->savepoints[$name] = true;
+        $validatedName = $this->validateSavepointName($name);
+        $this->connection->exec(\sprintf('SAVEPOINT %s', $validatedName));
+        $this->savepoints[$validatedName] = true;
 
-        return $name;
+        return $validatedName;
     }
 
     /**
@@ -217,5 +218,29 @@ final class PdoTransaction implements TransactionInterface
         };
 
         $this->connection->exec(\sprintf('SET TRANSACTION ISOLATION LEVEL %s', $levelString));
+    }
+
+    /**
+     * Validate savepoint name to prevent SQL injection.
+     * Only allows alphanumeric characters and underscores, with minimum length of 1.
+     *
+     * @param string $name The savepoint name to validate
+     *
+     * @return string The validated savepoint name
+     *
+     * @throws InvalidArgumentException If the name is empty or contains invalid characters
+     */
+    private function validateSavepointName(string $name): string
+    {
+        if ($name === '' || !preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
+            throw new InvalidArgumentException(
+                \sprintf(
+                    'Savepoint name "%s" is invalid. Only non-empty alphanumeric characters and underscores are allowed.',
+                    $name
+                )
+            );
+        }
+
+        return $name;
     }
 }
