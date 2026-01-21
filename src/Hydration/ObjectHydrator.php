@@ -426,7 +426,33 @@ final class ObjectHydrator implements HydratorInterface
 
             if (\is_array($currentValue)) {
                 $currentValue[] = $item;
-                $prop->setValue($parent, $currentValue);
+
+                // If running on PHP 8.1+, avoid writing to readonly properties
+                if (\method_exists($prop, 'isReadOnly') && $prop->isReadOnly()) {
+                    throw new RuntimeException(
+                        sprintf(
+                            'Cannot add item to readonly collection property "%s" on class "%s".',
+                            $property,
+                            $parent::class
+                        )
+                    );
+                }
+
+                try {
+                    $prop->setValue($parent, $currentValue);
+                } catch (\Error $e) {
+                    // Handle cases where the property is not actually mutable
+                    throw new RuntimeException(
+                        sprintf(
+                            'Failed to add item to collection property "%s" on class "%s": %s',
+                            $property,
+                            $parent::class,
+                            $e->getMessage()
+                        ),
+                        0,
+                        $e
+                    );
+                }
             }
         }
     }
