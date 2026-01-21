@@ -158,7 +158,7 @@ final class XmlMapperParser
             eviction: $eviction,
             flushInterval: $flushInterval !== '' ? (int) $flushInterval : null,
             size: $size !== '' ? (int) $size : 1024,
-            readOnly: $readOnly !== 'false',
+            readOnly: $readOnly === '' || $readOnly === 'true',
             enabled: true,
         );
 
