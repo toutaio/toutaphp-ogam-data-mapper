@@ -56,7 +56,7 @@ final class PdoCursor implements CursorInterface
             return ($this->hydrator)($this->currentRow);
         }
 
-        /** @phpstan-ignore-next-line Generic type T defaults to array<string, mixed> when no hydrator */
+        /** @phpstan-ignore-next-line When no hydrator is provided, returns the raw array instead of type T */
         return $this->currentRow;
     }
 
