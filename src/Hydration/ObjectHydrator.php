@@ -399,8 +399,12 @@ final class ObjectHydrator implements HydratorInterface
     {
         $reflection = $this->getReflectionClass($parent::class);
 
-        // Try setter first (e.g., addPost or setPosts)
-        $addMethod = 'add' . ucfirst(rtrim($property, 's')); // posts -> addPost
+        // Try setter first (e.g., addPost from "posts", addClass from "classes")
+        $baseName = $property;
+        if ($baseName !== '' && substr($baseName, -1) === 's') {
+            $baseName = substr($baseName, 0, -1);
+        }
+        $addMethod = 'add' . ucfirst($baseName);
 
         if (method_exists($parent, $addMethod)) {
             $parent->{$addMethod}($item);
