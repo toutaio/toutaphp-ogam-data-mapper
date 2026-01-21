@@ -20,8 +20,9 @@ enum EvictionPolicy: string
     case FIFO = 'FIFO';
 
     /**
-     * Soft references - JVM-style weak references (simulated in PHP).
-     * In PHP, this behaves similarly to LRU.
+     * Soft references - simulates Java's SoftReference-style behavior in PHP.
+     * This is distinct from PHP's built-in WeakReference/WeakMap support and,
+     * in this implementation, behaves similarly to LRU.
      */
     case SOFT = 'SOFT';
 
