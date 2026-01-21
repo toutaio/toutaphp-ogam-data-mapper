@@ -95,7 +95,7 @@ final class PdoTransaction implements TransactionInterface
             $name = 'ogam_savepoint_' . ++$this->savepointCounter;
         }
 
-        $sanitizedName = $this->sanitizeSavepointName($name);
+        $sanitizedName = $this->validateSavepointName($name);
         $this->connection->exec(\sprintf('SAVEPOINT %s', $sanitizedName));
         $this->savepoints[$name] = true;
 
@@ -117,7 +117,7 @@ final class PdoTransaction implements TransactionInterface
             throw new RuntimeException(\sprintf('Savepoint "%s" does not exist', $name));
         }
 
-        $sanitizedName = $this->sanitizeSavepointName($name);
+        $sanitizedName = $this->validateSavepointName($name);
         $this->connection->exec(\sprintf('RELEASE SAVEPOINT %s', $sanitizedName));
 
         // Release the specified savepoint and all savepoints created after it.
@@ -159,7 +159,7 @@ final class PdoTransaction implements TransactionInterface
                 unset($this->savepoints[$savepointNames[$i]]);
             }
         }
-        $sanitizedName = $this->sanitizeSavepointName($name);
+        $sanitizedName = $this->validateSavepointName($name);
         $this->connection->exec(\sprintf('ROLLBACK TO SAVEPOINT %s', $sanitizedName));
     }
 
@@ -223,21 +223,21 @@ final class PdoTransaction implements TransactionInterface
     }
 
     /**
-     * Sanitize savepoint name to prevent SQL injection.
-     * Only allows alphanumeric characters and underscores.
+     * Validate savepoint name to prevent SQL injection.
+     * Only allows alphanumeric characters and underscores, with minimum length of 1.
      *
-     * @param string $name The savepoint name to sanitize
+     * @param string $name The savepoint name to validate
      *
-     * @return string The sanitized savepoint name
+     * @return string The validated savepoint name
      *
-     * @throws InvalidArgumentException If the name contains invalid characters
+     * @throws InvalidArgumentException If the name is empty or contains invalid characters
      */
-    private function sanitizeSavepointName(string $name): string
+    private function validateSavepointName(string $name): string
     {
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
+        if ($name === '' || !preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
             throw new InvalidArgumentException(
                 \sprintf(
-                    'Savepoint name "%s" contains invalid characters. Only alphanumeric characters and underscores are allowed.',
+                    'Savepoint name "%s" is invalid. Only non-empty alphanumeric characters and underscores are allowed.',
                     $name
                 )
             );

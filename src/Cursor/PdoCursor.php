@@ -30,7 +30,7 @@ final class PdoCursor implements CursorInterface
 
     private int $index = -1;
 
-    private bool $rewound = false;
+    private bool $iterationStarted = false;
 
     /** @var array<string, mixed>|false|null */
     private array|false|null $currentRow = null;
@@ -78,6 +78,9 @@ final class PdoCursor implements CursorInterface
             return;
         }
 
+        // Mark that iteration has started (after the initial rewind)
+        $this->iterationStarted = true;
+
         /** @var array<string, mixed>|false $row */
         $row = $this->statement->fetch(PDO::FETCH_ASSOC);
         $this->currentRow = $row;
@@ -97,14 +100,12 @@ final class PdoCursor implements CursorInterface
 
         // PDOStatement cannot be rewound - it's forward-only
         // Throw an exception if rewind is called after iteration has started
-        if ($this->rewound) {
+        if ($this->iterationStarted) {
             throw new \RuntimeException(
                 'Cannot rewind cursor: PDOStatement is forward-only. ' .
                 'If you need to iterate multiple times, fetch all results into an array first.'
             );
         }
-
-        $this->rewound = true;
 
         // Reset index
         $this->index = 0;
