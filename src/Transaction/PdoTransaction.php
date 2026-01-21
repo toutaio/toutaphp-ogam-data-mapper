@@ -95,7 +95,8 @@ final class PdoTransaction implements TransactionInterface
             $name = 'ogam_savepoint_' . ++$this->savepointCounter;
         }
 
-        $this->connection->exec(\sprintf('SAVEPOINT %s', $name));
+        $sanitizedName = $this->sanitizeSavepointName($name);
+        $this->connection->exec(\sprintf('SAVEPOINT %s', $sanitizedName));
         $this->savepoints[$name] = true;
 
         return $name;
@@ -116,7 +117,8 @@ final class PdoTransaction implements TransactionInterface
             throw new RuntimeException(\sprintf('Savepoint "%s" does not exist', $name));
         }
 
-        $this->connection->exec(\sprintf('RELEASE SAVEPOINT %s', $name));
+        $sanitizedName = $this->sanitizeSavepointName($name);
+        $this->connection->exec(\sprintf('RELEASE SAVEPOINT %s', $sanitizedName));
 
         // Release the specified savepoint and all savepoints created after it.
         $remove = false;
@@ -157,7 +159,8 @@ final class PdoTransaction implements TransactionInterface
                 unset($this->savepoints[$savepointNames[$i]]);
             }
         }
-        $this->connection->exec(\sprintf('ROLLBACK TO SAVEPOINT %s', $name));
+        $sanitizedName = $this->sanitizeSavepointName($name);
+        $this->connection->exec(\sprintf('ROLLBACK TO SAVEPOINT %s', $sanitizedName));
     }
 
     public function close(): void
@@ -217,5 +220,29 @@ final class PdoTransaction implements TransactionInterface
         };
 
         $this->connection->exec(\sprintf('SET TRANSACTION ISOLATION LEVEL %s', $levelString));
+    }
+
+    /**
+     * Sanitize savepoint name to prevent SQL injection.
+     * Only allows alphanumeric characters and underscores.
+     *
+     * @param string $name The savepoint name to sanitize
+     *
+     * @return string The sanitized savepoint name
+     *
+     * @throws InvalidArgumentException If the name contains invalid characters
+     */
+    private function sanitizeSavepointName(string $name): string
+    {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
+            throw new InvalidArgumentException(
+                \sprintf(
+                    'Savepoint name "%s" contains invalid characters. Only alphanumeric characters and underscores are allowed.',
+                    $name
+                )
+            );
+        }
+
+        return $name;
     }
 }

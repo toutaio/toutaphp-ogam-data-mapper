@@ -1164,6 +1164,22 @@ final class XmlMapperParserTest extends TestCase
         $this->assertSame(EvictionPolicy::WEAK, $cacheConfig->eviction);
     }
 
+    public function testCacheWithInvalidEvictionPolicyFallsBackToLRU(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="ProductMapper">
+                <cache eviction="INVALID_POLICY"/>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $cacheConfig = $this->configuration->getCacheConfiguration('ProductMapper');
+        // Invalid eviction policy should fall back to LRU
+        $this->assertSame(EvictionPolicy::LRU, $cacheConfig->eviction);
+    }
+
     public function testMapperWithoutCacheHasNoCacheConfiguration(): void
     {
         $xml = <<<XML

@@ -420,6 +420,9 @@ final class ObjectHydrator implements HydratorInterface
         }
 
         // Try direct property access
+        // Note: This will fail for readonly properties on readonly classes.
+        // Nested result mapping is not supported for readonly collection properties.
+        // Use an adder method (e.g., addItem) or mutable properties instead.
         if ($reflection->hasProperty($property)) {
             $prop = $reflection->getProperty($property);
             $prop->setAccessible(true);
