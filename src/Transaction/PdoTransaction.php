@@ -95,11 +95,11 @@ final class PdoTransaction implements TransactionInterface
             $name = 'ogam_savepoint_' . ++$this->savepointCounter;
         }
 
-        $sanitizedName = $this->validateSavepointName($name);
-        $this->connection->exec(\sprintf('SAVEPOINT %s', $sanitizedName));
-        $this->savepoints[$name] = true;
+        $validatedName = $this->validateSavepointName($name);
+        $this->connection->exec(\sprintf('SAVEPOINT %s', $validatedName));
+        $this->savepoints[$validatedName] = true;
 
-        return $name;
+        return $validatedName;
     }
 
     /**
@@ -117,8 +117,7 @@ final class PdoTransaction implements TransactionInterface
             throw new RuntimeException(\sprintf('Savepoint "%s" does not exist', $name));
         }
 
-        $sanitizedName = $this->validateSavepointName($name);
-        $this->connection->exec(\sprintf('RELEASE SAVEPOINT %s', $sanitizedName));
+        $this->connection->exec(\sprintf('RELEASE SAVEPOINT %s', $name));
 
         // Release the specified savepoint and all savepoints created after it.
         $remove = false;
@@ -159,8 +158,7 @@ final class PdoTransaction implements TransactionInterface
                 unset($this->savepoints[$savepointNames[$i]]);
             }
         }
-        $sanitizedName = $this->validateSavepointName($name);
-        $this->connection->exec(\sprintf('ROLLBACK TO SAVEPOINT %s', $sanitizedName));
+        $this->connection->exec(\sprintf('ROLLBACK TO SAVEPOINT %s', $name));
     }
 
     public function close(): void
