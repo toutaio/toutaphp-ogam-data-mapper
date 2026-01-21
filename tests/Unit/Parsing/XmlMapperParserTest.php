@@ -455,7 +455,7 @@ final class XmlMapperParserTest extends TestCase
 
         $association = $resultMap->getAssociations()[0];
         $this->assertSame('address', $association->getProperty());
-        $this->assertSame('Address', $association->getJavaType());
+        $this->assertSame('Address', $association->getPhpType());
         $this->assertSame('addr_', $association->getColumnPrefix());
     }
 
@@ -923,7 +923,7 @@ final class XmlMapperParserTest extends TestCase
         $resultMap = $this->configuration->getResultMap('UserMapper.UserResult');
         $this->assertNotNull($resultMap);
         $association = $resultMap->getAssociations()[0];
-        $this->assertSame('object', $association->getJavaType());
+        $this->assertSame('object', $association->getPhpType());
     }
 
     public function testParseCollectionWithoutOfType(): void

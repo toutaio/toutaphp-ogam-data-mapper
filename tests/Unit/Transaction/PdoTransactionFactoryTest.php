@@ -6,11 +6,11 @@ namespace Touta\Ogam\Tests\Unit\Transaction;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Touta\Ogam\Transaction\JdbcTransaction;
-use Touta\Ogam\Transaction\JdbcTransactionFactory;
+use Touta\Ogam\Transaction\PdoTransaction;
+use Touta\Ogam\Transaction\PdoTransactionFactory;
 use Touta\Ogam\Transaction\TransactionFactory;
 
-final class JdbcTransactionFactoryTest extends TestCase
+final class PdoTransactionFactoryTest extends TestCase
 {
     private PDO $connection;
 
@@ -23,22 +23,22 @@ final class JdbcTransactionFactoryTest extends TestCase
 
     public function testImplementsTransactionFactory(): void
     {
-        $factory = new JdbcTransactionFactory(autoCommit: true);
+        $factory = new PdoTransactionFactory(autoCommit: true);
 
         $this->assertInstanceOf(TransactionFactory::class, $factory);
     }
 
-    public function testNewTransactionReturnsJdbcTransaction(): void
+    public function testNewTransactionReturnsPdoTransaction(): void
     {
-        $factory = new JdbcTransactionFactory(autoCommit: true);
+        $factory = new PdoTransactionFactory(autoCommit: true);
         $transaction = $factory->newTransaction($this->connection);
 
-        $this->assertInstanceOf(JdbcTransaction::class, $transaction);
+        $this->assertInstanceOf(PdoTransaction::class, $transaction);
     }
 
     public function testNewTransactionWithDefaultIsolationLevel(): void
     {
-        $factory = new JdbcTransactionFactory(autoCommit: true);
+        $factory = new PdoTransactionFactory(autoCommit: true);
         $transaction = $factory->newTransaction($this->connection);
 
         $this->assertNull($transaction->getIsolationLevel());
@@ -46,7 +46,7 @@ final class JdbcTransactionFactoryTest extends TestCase
 
     public function testNewTransactionWithExplicitAutoCommitTrue(): void
     {
-        $factory = new JdbcTransactionFactory(autoCommit: true);
+        $factory = new PdoTransactionFactory(autoCommit: true);
         $transaction = $factory->newTransaction($this->connection);
 
         $this->assertTrue($transaction->isAutoCommit());
@@ -54,7 +54,7 @@ final class JdbcTransactionFactoryTest extends TestCase
 
     public function testNewTransactionWithExplicitAutoCommitFalse(): void
     {
-        $factory = new JdbcTransactionFactory(autoCommit: false);
+        $factory = new PdoTransactionFactory(autoCommit: false);
         $transaction = $factory->newTransaction($this->connection);
 
         $this->assertFalse($transaction->isAutoCommit());
@@ -62,7 +62,7 @@ final class JdbcTransactionFactoryTest extends TestCase
 
     public function testMultipleTransactionsCreated(): void
     {
-        $factory = new JdbcTransactionFactory(autoCommit: true);
+        $factory = new PdoTransactionFactory(autoCommit: true);
 
         $transaction1 = $factory->newTransaction($this->connection);
         $transaction2 = $factory->newTransaction($this->connection);

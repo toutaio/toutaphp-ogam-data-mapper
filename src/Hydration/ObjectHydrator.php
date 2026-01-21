@@ -264,7 +264,7 @@ final class ObjectHydrator implements HydratorInterface
     {
         $idMappings = $association->getIdMappings();
         $resultMappings = $association->getResultMappings();
-        $type = $association->getJavaType();
+        $type = $association->getPhpType();
 
         if (!class_exists($type)) {
             return null;

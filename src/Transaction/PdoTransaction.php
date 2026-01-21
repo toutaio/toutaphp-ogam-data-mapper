@@ -9,11 +9,9 @@ use PDO;
 use RuntimeException;
 
 /**
- * JDBC-style transaction that commits on close unless autocommit is disabled.
- *
- * Similar to MyBatis JdbcTransaction behavior.
+ * PDO-style transaction that commits on close unless autocommit is disabled.
  */
-final class JdbcTransaction implements TransactionInterface
+final class PdoTransaction implements TransactionInterface
 {
     private bool $closed = false;
 

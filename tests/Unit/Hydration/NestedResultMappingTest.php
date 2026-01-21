@@ -96,7 +96,7 @@ final class NestedResultMappingTest extends TestCase
             associations: [
                 new Association(
                     property: 'profile',
-                    javaType: AuthorProfile::class,
+                    phpType: AuthorProfile::class,
                     resultMapId: null,
                     columnPrefix: 'profile_',
                     idMappings: [
@@ -145,7 +145,7 @@ final class NestedResultMappingTest extends TestCase
             associations: [
                 new Association(
                     property: 'profile',
-                    javaType: AuthorProfile::class,
+                    phpType: AuthorProfile::class,
                     resultMapId: null,
                     columnPrefix: 'profile_',
                     idMappings: [
@@ -311,7 +311,7 @@ final class NestedResultMappingTest extends TestCase
             associations: [
                 new Association(
                     property: 'customer',
-                    javaType: Customer::class,
+                    phpType: Customer::class,
                     resultMapId: null,
                     columnPrefix: 'customer_',
                     idMappings: [

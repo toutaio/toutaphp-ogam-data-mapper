@@ -14,7 +14,7 @@ use Touta\Ogam\Mapping\BoundSql;
 use Touta\Ogam\Mapping\Hydration;
 use Touta\Ogam\Mapping\MappedStatement;
 use Touta\Ogam\Mapping\StatementType;
-use Touta\Ogam\Transaction\JdbcTransaction;
+use Touta\Ogam\Transaction\PdoTransaction;
 
 #[CoversClass(SimpleExecutor::class)]
 final class CacheEvictionTest extends TestCase
@@ -37,7 +37,7 @@ final class CacheEvictionTest extends TestCase
 
         $this->configuration = new Configuration();
         // SQLite doesn't support ATTR_AUTOCOMMIT, so we pass autoCommit explicitly
-        $transaction = new JdbcTransaction($this->pdo, null, true);
+        $transaction = new PdoTransaction($this->pdo, null, true);
         $this->executor = new SimpleExecutor($this->configuration, $transaction);
     }
 

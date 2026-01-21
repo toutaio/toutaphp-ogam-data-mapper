@@ -9,14 +9,14 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Touta\Ogam\Transaction\JdbcTransaction;
+use Touta\Ogam\Transaction\PdoTransaction;
 
-#[CoversClass(JdbcTransaction::class)]
+#[CoversClass(PdoTransaction::class)]
 final class SavepointTest extends TestCase
 {
     private PDO $pdo;
 
-    private JdbcTransaction $transaction;
+    private PdoTransaction $transaction;
 
     protected function setUp(): void
     {
@@ -26,7 +26,7 @@ final class SavepointTest extends TestCase
 
         $this->pdo->exec('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)');
 
-        $this->transaction = new JdbcTransaction($this->pdo, null, false);
+        $this->transaction = new PdoTransaction($this->pdo, null, false);
     }
 
     #[Test]

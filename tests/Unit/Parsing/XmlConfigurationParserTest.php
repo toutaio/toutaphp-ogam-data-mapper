@@ -264,7 +264,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments default="production">
                     <environment id="production">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="POOLED">
                             <property name="driver" value="mysql"/>
                             <property name="host" value="localhost"/>
@@ -307,14 +307,14 @@ final class XmlConfigurationParserTest extends TestCase
         $this->assertSame('test', $env->getId());
     }
 
-    public function testParseEnvironmentWithJdbcTransactionManager(): void
+    public function testParseEnvironmentWithPdoTransactionManager(): void
     {
         $xml = <<<XML
             <?xml version="1.0" encoding="UTF-8"?>
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="dsn" value="sqlite::memory:"/>
                         </dataSource>
@@ -336,7 +336,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                     </environment>
                 </environments>
             </configuration>
@@ -355,7 +355,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="dsn" value="mysql:host=localhost;dbname=test"/>
                             <property name="username" value="user"/>
@@ -377,7 +377,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="UNPOOLED">
                             <property name="driver" value="mysql"/>
                             <property name="host" value="localhost"/>
@@ -402,7 +402,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="POOLED">
                             <property name="driver" value="pgsql"/>
                             <property name="host" value="localhost"/>
@@ -427,7 +427,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="driver" value="sqlite"/>
                             <property name="database" value="/tmp/test.db"/>
@@ -448,7 +448,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="driver" value="unknown"/>
                             <property name="database" value="testdb"/>
@@ -471,7 +471,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="driver" value="mysql"/>
                             <property name="host" value="localhost"/>
@@ -496,7 +496,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="driver" value="mysql"/>
                             <property name="host" value="\${TEST_DB_HOST}"/>
@@ -523,7 +523,7 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments>
                     <environment id="test">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="driver" value="mysql"/>
                             <property name="host" value="\${NONEXISTENT_VAR}"/>
@@ -545,13 +545,13 @@ final class XmlConfigurationParserTest extends TestCase
             <configuration>
                 <environments default="development">
                     <environment id="development">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="dsn" value="sqlite::memory:"/>
                         </dataSource>
                     </environment>
                     <environment id="production">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="POOLED">
                             <property name="dsn" value="mysql:host=prod;dbname=app"/>
                         </dataSource>
@@ -701,7 +701,7 @@ final class XmlConfigurationParserTest extends TestCase
                 </typeAliases>
                 <environments default="development">
                     <environment id="development">
-                        <transactionManager type="JDBC"/>
+                        <transactionManager type="PDO"/>
                         <dataSource type="SIMPLE">
                             <property name="dsn" value="sqlite::memory:"/>
                         </dataSource>

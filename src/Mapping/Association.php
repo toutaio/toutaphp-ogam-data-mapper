@@ -13,7 +13,7 @@ final class Association
 {
     /**
      * @param string $property The target property name
-     * @param string $javaType The associated object type (class name)
+     * @param string $phpType The associated object type (class name)
      * @param string|null $resultMapId The result map ID for the associated object
      * @param string $columnPrefix Column prefix for disambiguation
      * @param list<ResultMapping> $idMappings ID column mappings
@@ -21,7 +21,7 @@ final class Association
      */
     public function __construct(
         private readonly string $property,
-        private readonly string $javaType,
+        private readonly string $phpType,
         private readonly ?string $resultMapId = null,
         private readonly string $columnPrefix = '',
         private readonly array $idMappings = [],
@@ -33,9 +33,9 @@ final class Association
         return $this->property;
     }
 
-    public function getJavaType(): string
+    public function getPhpType(): string
     {
-        return $this->javaType;
+        return $this->phpType;
     }
 
     public function getResultMapId(): ?string

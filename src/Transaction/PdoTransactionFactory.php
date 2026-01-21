@@ -7,9 +7,9 @@ namespace Touta\Ogam\Transaction;
 use PDO;
 
 /**
- * Factory that creates JDBC-style transactions.
+ * Factory that creates PDO-style transactions.
  */
-final class JdbcTransactionFactory implements TransactionFactory
+final class PdoTransactionFactory implements TransactionFactory
 {
     public function __construct(
         private readonly ?int $defaultIsolationLevel = null,
@@ -18,7 +18,7 @@ final class JdbcTransactionFactory implements TransactionFactory
 
     public function newTransaction(PDO $connection): TransactionInterface
     {
-        return new JdbcTransaction(
+        return new PdoTransaction(
             $connection,
             $this->defaultIsolationLevel,
             $this->autoCommit,
