@@ -7,6 +7,7 @@ namespace Touta\Ogam\Cursor;
 use Closure;
 use PDO;
 use PDOStatement;
+use RuntimeException;
 
 /**
  * PDO-based cursor for lazy iteration over query results.
@@ -101,9 +102,9 @@ final class PdoCursor implements CursorInterface
         // PDOStatement cannot be rewound - it's forward-only
         // Throw an exception if rewind is called after iteration has started
         if ($this->iterationStarted) {
-            throw new \RuntimeException(
-                'Cannot rewind cursor: PDOStatement is forward-only. ' .
-                'If you need to iterate multiple times, fetch all results into an array first.'
+            throw new RuntimeException(
+                'Cannot rewind cursor: PDOStatement is forward-only. '
+                . 'If you need to iterate multiple times, fetch all results into an array first.',
             );
         }
 

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Sql;
 
+use ReflectionObject;
 use ReflectionProperty;
 use Touta\Ogam\Configuration;
+use Touta\Ogam\Sql\Expression\ExpressionEvaluator;
 
 /**
  * Context for dynamic SQL evaluation.
@@ -24,14 +26,18 @@ final class DynamicContext
     /** @var array<string, mixed>|object|null */
     private readonly array|object|null $parameter;
 
+    private readonly ExpressionEvaluator $expressionEvaluator;
+
     /**
      * @param array<string, mixed>|object|null $parameter
      */
     public function __construct(
         private readonly Configuration $configuration,
         array|object|null $parameter,
+        ?ExpressionEvaluator $expressionEvaluator = null,
     ) {
         $this->parameter = $parameter;
+        $this->expressionEvaluator = $expressionEvaluator ?? new ExpressionEvaluator();
     }
 
     public function appendSql(string $sql): void
@@ -80,95 +86,65 @@ final class DynamicContext
 
     /**
      * Evaluate an expression against the parameter.
+     *
+     * Supports both simple property access (e.g., "name", "user.email")
+     * and complex expressions (e.g., "name !== null", "age > 18").
      */
     public function evaluate(string $expression): mixed
     {
-        return $this->getValueFromExpression($expression);
+        return $this->expressionEvaluator->evaluate($expression, $this->getEvaluationBindings());
     }
 
     /**
      * Evaluate an expression as boolean.
+     *
+     * Supports both simple property access and complex expressions.
      */
     public function evaluateBoolean(string $expression): bool
     {
-        $value = $this->evaluate($expression);
-
-        if (\is_bool($value)) {
-            return $value;
-        }
-
-        if ($value === null) {
-            return false;
-        }
-
-        if (\is_string($value)) {
-            return $value !== '';
-        }
-
-        if (\is_array($value)) {
-            return $value !== [];
-        }
-
-        return (bool) $value;
+        return $this->expressionEvaluator->evaluateBoolean($expression, $this->getEvaluationBindings());
     }
 
-    private function getValueFromExpression(string $expression): mixed
+    /**
+     * Get the combined bindings for expression evaluation.
+     *
+     * Merges the parameter (if array) with explicit bindings.
+     * Explicit bindings take precedence.
+     *
+     * @return array<string, mixed>
+     */
+    private function getEvaluationBindings(): array
     {
-        $parameter = $this->parameter;
+        $parameterBindings = [];
 
-        if ($parameter === null) {
-            return null;
+        if (\is_array($this->parameter)) {
+            $parameterBindings = $this->parameter;
+        } elseif (\is_object($this->parameter)) {
+            // For objects, wrap in a binding so property access works
+            // The evaluator handles object property access internally
+            $parameterBindings = $this->extractObjectProperties($this->parameter);
         }
 
-        // Check bindings first
-        if (isset($this->bindings[$expression])) {
-            return $this->bindings[$expression];
-        }
-
-        // Handle nested property access
-        $parts = explode('.', $expression);
-        $current = $parameter;
-
-        foreach ($parts as $part) {
-            if (\is_array($current)) {
-                if (!\array_key_exists($part, $current)) {
-                    return null;
-                }
-                $current = $current[$part];
-            } elseif (\is_object($current)) {
-                $current = $this->getObjectProperty($current, $part);
-            } else {
-                return null;
-            }
-        }
-
-        return $current;
+        // Explicit bindings take precedence
+        return array_merge($parameterBindings, $this->bindings);
     }
 
-    private function getObjectProperty(object $object, string $property): mixed
+    /**
+     * Extract public properties from an object for evaluation.
+     *
+     * @return array<string, mixed>
+     */
+    private function extractObjectProperties(object $object): array
     {
-        // Try getter
-        $getter = 'get' . ucfirst($property);
+        $properties = [];
+        $reflection = new ReflectionObject($object);
 
-        if (method_exists($object, $getter)) {
-            return $object->{$getter}();
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            $properties[$property->getName()] = $property->getValue($object);
         }
 
-        // Try boolean getter
-        $isGetter = 'is' . ucfirst($property);
-
-        if (method_exists($object, $isGetter)) {
-            return $object->{$isGetter}();
-        }
-
-        // Try direct property
-        if (property_exists($object, $property)) {
-            $reflection = new ReflectionProperty($object, $property);
-            $reflection->setAccessible(true);
-
-            return $reflection->getValue($object);
-        }
-
-        return null;
+        // Also include getter-based properties via the object itself
+        // The ExpressionEvaluator handles this for nested access
+        return $properties;
     }
 }
