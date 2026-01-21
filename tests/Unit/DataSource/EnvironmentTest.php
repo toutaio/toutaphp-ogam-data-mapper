@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Touta\Ogam\Contract\DataSourceInterface;
 use Touta\Ogam\DataSource\Environment;
 use Touta\Ogam\DataSource\SimpleDataSource;
-use Touta\Ogam\Transaction\JdbcTransactionFactory;
+use Touta\Ogam\Transaction\PdoTransactionFactory;
 use Touta\Ogam\Transaction\TransactionFactory;
 
 final class EnvironmentTest extends TestCase
@@ -46,13 +46,13 @@ final class EnvironmentTest extends TestCase
     public function testConstructorWithRealImplementations(): void
     {
         $dataSource = new SimpleDataSource('sqlite::memory:');
-        $transactionFactory = new JdbcTransactionFactory();
+        $transactionFactory = new PdoTransactionFactory();
 
         $environment = new Environment('integration', $dataSource, $transactionFactory);
 
         $this->assertEquals('integration', $environment->getId());
         $this->assertInstanceOf(SimpleDataSource::class, $environment->getDataSource());
-        $this->assertInstanceOf(JdbcTransactionFactory::class, $environment->getTransactionFactory());
+        $this->assertInstanceOf(PdoTransactionFactory::class, $environment->getTransactionFactory());
     }
 
     public function testMultipleEnvironments(): void

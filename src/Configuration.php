@@ -6,6 +6,7 @@ namespace Touta\Ogam;
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use Touta\Ogam\Cache\CacheConfiguration;
 use Touta\Ogam\Contract\TypeHandlerInterface;
 use Touta\Ogam\DataSource\Environment;
 use Touta\Ogam\Executor\ExecutorType;
@@ -55,6 +56,9 @@ final class Configuration
 
     /** @var list<string> Registered mapper interfaces */
     private array $mapperInterfaces = [];
+
+    /** @var array<string, CacheConfiguration> Namespace-specific cache configurations */
+    private array $cacheConfigurations = [];
 
     private TypeHandlerRegistry $typeHandlerRegistry;
 
@@ -311,6 +315,33 @@ final class Configuration
         $this->typeHandlerRegistry->register($phpType, $handler);
 
         return $this;
+    }
+
+    // Cache configuration management
+
+    public function addCacheConfiguration(CacheConfiguration $config): self
+    {
+        $this->cacheConfigurations[$config->namespace] = $config;
+
+        return $this;
+    }
+
+    public function getCacheConfiguration(string $namespace): ?CacheConfiguration
+    {
+        return $this->cacheConfigurations[$namespace] ?? null;
+    }
+
+    public function hasCacheConfiguration(string $namespace): bool
+    {
+        return isset($this->cacheConfigurations[$namespace]);
+    }
+
+    /**
+     * @return array<string, CacheConfiguration>
+     */
+    public function getCacheConfigurations(): array
+    {
+        return $this->cacheConfigurations;
     }
 
     private function registerDefaultTypeAliases(): void

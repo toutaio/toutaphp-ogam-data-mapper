@@ -13,8 +13,8 @@ use Touta\Ogam\DataSource\PooledDataSource;
 use Touta\Ogam\DataSource\SimpleDataSource;
 use Touta\Ogam\DataSource\UnpooledDataSource;
 use Touta\Ogam\Executor\ExecutorType;
-use Touta\Ogam\Transaction\JdbcTransactionFactory;
 use Touta\Ogam\Transaction\ManagedTransactionFactory;
+use Touta\Ogam\Transaction\PdoTransactionFactory;
 
 /**
  * Parses the main Ogam configuration XML file.
@@ -215,7 +215,7 @@ final class XmlConfigurationParser
         $this->configuration->addEnvironment($environment);
     }
 
-    private function parseTransactionManager(?DOMElement $element): ManagedTransactionFactory|JdbcTransactionFactory
+    private function parseTransactionManager(?DOMElement $element): ManagedTransactionFactory|PdoTransactionFactory
     {
         if ($element === null) {
             return new ManagedTransactionFactory();
@@ -224,7 +224,7 @@ final class XmlConfigurationParser
         $type = strtoupper($element->getAttribute('type'));
 
         return match ($type) {
-            'JDBC' => new JdbcTransactionFactory(),
+            'PDO' => new PdoTransactionFactory(),
             default => new ManagedTransactionFactory(),
         };
     }

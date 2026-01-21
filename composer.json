@@ -21,7 +21,8 @@
     "homepage": "https://github.com/toutaio/toutaphp-ogam-data-mapper",
     "require": {
         "php": ">=8.3",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "psr/cache": "^3.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.64",

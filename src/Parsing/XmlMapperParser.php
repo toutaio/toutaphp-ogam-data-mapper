@@ -9,6 +9,8 @@ use DOMElement;
 use DOMNode;
 use DOMText;
 use RuntimeException;
+use Touta\Ogam\Cache\CacheConfiguration;
+use Touta\Ogam\Cache\EvictionPolicy;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Mapping\Association;
 use Touta\Ogam\Mapping\Collection;
@@ -67,6 +69,9 @@ final class XmlMapperParser
         $this->sqlFragments = [];
         $this->parseSqlFragments($mapper);
 
+        // Parse cache element
+        $this->parseCache($mapper, $namespace);
+
         // Parse result maps
         foreach ($this->getChildElements($mapper, 'resultMap') as $element) {
             $this->parseResultMap($element, $namespace);
@@ -104,6 +109,9 @@ final class XmlMapperParser
         $this->sqlFragments = [];
         $this->parseSqlFragments($mapper);
 
+        // Parse cache element
+        $this->parseCache($mapper, $namespace);
+
         foreach ($this->getChildElements($mapper, 'resultMap') as $element) {
             $this->parseResultMap($element, $namespace);
         }
@@ -123,6 +131,53 @@ final class XmlMapperParser
                 $this->sqlFragments[$id] = $element;
             }
         }
+    }
+
+    /**
+     * Parse the <cache> element if present.
+     */
+    private function parseCache(DOMElement $mapper, string $namespace): void
+    {
+        $cacheElements = $this->getChildElements($mapper, 'cache');
+
+        if ($cacheElements === []) {
+            return;
+        }
+
+        $element = $cacheElements[0];
+
+        $type = $element->getAttribute('type') ?: null;
+        $eviction = $this->parseEvictionPolicy($element->getAttribute('eviction'));
+        $flushInterval = $element->getAttribute('flushInterval');
+        $size = $element->getAttribute('size');
+        $readOnly = $element->getAttribute('readOnly');
+
+        $cacheConfig = new CacheConfiguration(
+            namespace: $namespace,
+            implementation: $type,
+            eviction: $eviction,
+            flushInterval: $flushInterval !== '' ? (int) $flushInterval : null,
+            size: $size !== '' ? (int) $size : 1024,
+            readOnly: $readOnly === '' || $readOnly === 'true',
+            enabled: true,
+        );
+
+        $this->configuration->addCacheConfiguration($cacheConfig);
+    }
+
+    private function parseEvictionPolicy(string $value): EvictionPolicy
+    {
+        if ($value === '') {
+            return EvictionPolicy::LRU;
+        }
+
+        return match (strtoupper($value)) {
+            'LRU' => EvictionPolicy::LRU,
+            'FIFO' => EvictionPolicy::FIFO,
+            'SOFT' => EvictionPolicy::SOFT,
+            'WEAK' => EvictionPolicy::WEAK,
+            default => EvictionPolicy::LRU,
+        };
     }
 
     private function loadXml(string $path): DOMDocument

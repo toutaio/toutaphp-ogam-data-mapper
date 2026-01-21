@@ -21,7 +21,7 @@ final class AssociationTest extends TestCase
     {
         $association = new Association('address', 'Address');
 
-        $this->assertSame('Address', $association->getJavaType());
+        $this->assertSame('Address', $association->getPhpType());
     }
 
     public function testGetResultMapIdDefault(): void
@@ -122,7 +122,7 @@ final class AssociationTest extends TestCase
 
         $association = new Association(
             property: 'billingAddress',
-            javaType: 'Address',
+            phpType: 'Address',
             resultMapId: 'billingAddressMap',
             columnPrefix: 'billing_',
             idMappings: [$idMapping],
@@ -130,7 +130,7 @@ final class AssociationTest extends TestCase
         );
 
         $this->assertSame('billingAddress', $association->getProperty());
-        $this->assertSame('Address', $association->getJavaType());
+        $this->assertSame('Address', $association->getPhpType());
         $this->assertSame('billingAddressMap', $association->getResultMapId());
         $this->assertSame('billing_', $association->getColumnPrefix());
         $this->assertSame([$idMapping], $association->getIdMappings());

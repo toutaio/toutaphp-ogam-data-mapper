@@ -9,15 +9,18 @@ use PDO;
 use RuntimeException;
 
 /**
- * JDBC-style transaction that commits on close unless autocommit is disabled.
- *
- * Similar to MyBatis JdbcTransaction behavior.
+ * PDO-style transaction that commits on close unless autocommit is disabled.
  */
-final class JdbcTransaction implements TransactionInterface
+final class PdoTransaction implements TransactionInterface
 {
     private bool $closed = false;
 
     private bool $autoCommit;
+
+    /** @var array<string, bool> Active savepoints indexed by name */
+    private array $savepoints = [];
+
+    private int $savepointCounter = 0;
 
     public function __construct(
         private readonly PDO $connection,
@@ -50,6 +53,9 @@ final class JdbcTransaction implements TransactionInterface
         if (!$this->autoCommit && $this->connection->inTransaction()) {
             $this->connection->commit();
 
+            // Clear all savepoints on commit
+            $this->savepoints = [];
+
             // Start a new transaction
             $this->connection->beginTransaction();
         }
@@ -64,9 +70,94 @@ final class JdbcTransaction implements TransactionInterface
         if (!$this->autoCommit && $this->connection->inTransaction()) {
             $this->connection->rollBack();
 
+            // Clear all savepoints on rollback
+            $this->savepoints = [];
+
             // Start a new transaction
             $this->connection->beginTransaction();
         }
+    }
+
+    /**
+     * Create a savepoint with the given name.
+     *
+     * @param string|null $name The savepoint name (auto-generated if null)
+     *
+     * @return string The savepoint name
+     */
+    public function createSavepoint(?string $name = null): string
+    {
+        if ($this->closed) {
+            throw new RuntimeException('Transaction is already closed');
+        }
+
+        if ($name === null) {
+            $name = 'ogam_savepoint_' . ++$this->savepointCounter;
+        }
+
+        $this->connection->exec(\sprintf('SAVEPOINT %s', $name));
+        $this->savepoints[$name] = true;
+
+        return $name;
+    }
+
+    /**
+     * Release a savepoint (making changes permanent within the transaction).
+     *
+     * @param string $name The savepoint name
+     */
+    public function releaseSavepoint(string $name): void
+    {
+        if ($this->closed) {
+            throw new RuntimeException('Transaction is already closed');
+        }
+
+        if (!isset($this->savepoints[$name])) {
+            throw new RuntimeException(\sprintf('Savepoint "%s" does not exist', $name));
+        }
+
+        $this->connection->exec(\sprintf('RELEASE SAVEPOINT %s', $name));
+
+        // Release the specified savepoint and all savepoints created after it.
+        $remove = false;
+        foreach ($this->savepoints as $savepointName => $_) {
+            if ($savepointName === $name) {
+                $remove = true;
+            }
+
+            if ($remove) {
+                unset($this->savepoints[$savepointName]);
+            }
+        }
+    }
+
+    /**
+     * Rollback to a savepoint (undoing changes since the savepoint was created).
+     *
+     * @param string $name The savepoint name
+     */
+    public function rollbackToSavepoint(string $name): void
+    {
+        if ($this->closed) {
+            throw new RuntimeException('Transaction is already closed');
+        }
+
+        if (!isset($this->savepoints[$name])) {
+            throw new RuntimeException(\sprintf('Savepoint "%s" does not exist', $name));
+        }
+
+        // When rolling back to a savepoint, all savepoints created after it
+        // should be invalidated and removed from the internal tracking.
+        $savepointNames = array_keys($this->savepoints);
+        $position = array_search($name, $savepointNames, true);
+
+        if ($position !== false) {
+            $count = \count($savepointNames);
+            for ($i = $position + 1; $i < $count; $i++) {
+                unset($this->savepoints[$savepointNames[$i]]);
+            }
+        }
+        $this->connection->exec(\sprintf('ROLLBACK TO SAVEPOINT %s', $name));
     }
 
     public function close(): void

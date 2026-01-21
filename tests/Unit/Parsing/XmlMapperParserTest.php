@@ -6,6 +6,7 @@ namespace Touta\Ogam\Tests\Unit\Parsing;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Touta\Ogam\Cache\EvictionPolicy;
 use Touta\Ogam\Configuration;
 use Touta\Ogam\Mapping\Hydration;
 use Touta\Ogam\Mapping\StatementType;
@@ -454,7 +455,7 @@ final class XmlMapperParserTest extends TestCase
 
         $association = $resultMap->getAssociations()[0];
         $this->assertSame('address', $association->getProperty());
-        $this->assertSame('Address', $association->getJavaType());
+        $this->assertSame('Address', $association->getPhpType());
         $this->assertSame('addr_', $association->getColumnPrefix());
     }
 
@@ -922,7 +923,7 @@ final class XmlMapperParserTest extends TestCase
         $resultMap = $this->configuration->getResultMap('UserMapper.UserResult');
         $this->assertNotNull($resultMap);
         $association = $resultMap->getAssociations()[0];
-        $this->assertSame('object', $association->getJavaType());
+        $this->assertSame('object', $association->getPhpType());
     }
 
     public function testParseCollectionWithoutOfType(): void
@@ -1079,6 +1080,105 @@ final class XmlMapperParserTest extends TestCase
         $this->expectExceptionMessage('SQL fragment not found: nonExistent');
 
         $this->parser->parseXml($xml);
+    }
+
+    public function testParseCacheElementWithDefaults(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <cache/>
+                <select id="findAll">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $cacheConfig = $this->configuration->getCacheConfiguration('UserMapper');
+        $this->assertNotNull($cacheConfig);
+        $this->assertSame('UserMapper', $cacheConfig->namespace);
+        $this->assertSame(EvictionPolicy::LRU, $cacheConfig->eviction);
+        $this->assertSame(1024, $cacheConfig->size);
+        $this->assertTrue($cacheConfig->readOnly);
+        $this->assertTrue($cacheConfig->enabled);
+    }
+
+    public function testParseCacheElementWithCustomValues(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="OrderMapper">
+                <cache
+                    type="CustomCacheAdapter"
+                    eviction="FIFO"
+                    flushInterval="60000"
+                    size="512"
+                    readOnly="false"/>
+                <select id="findAll">
+                    SELECT * FROM orders
+                </select>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $cacheConfig = $this->configuration->getCacheConfiguration('OrderMapper');
+        $this->assertNotNull($cacheConfig);
+        $this->assertSame('OrderMapper', $cacheConfig->namespace);
+        $this->assertSame('CustomCacheAdapter', $cacheConfig->implementation);
+        $this->assertSame(EvictionPolicy::FIFO, $cacheConfig->eviction);
+        $this->assertSame(60000, $cacheConfig->flushInterval);
+        $this->assertSame(512, $cacheConfig->size);
+        $this->assertFalse($cacheConfig->readOnly);
+    }
+
+    public function testParseCacheElementWithSoftEviction(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="ProductMapper">
+                <cache eviction="SOFT"/>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $cacheConfig = $this->configuration->getCacheConfiguration('ProductMapper');
+        $this->assertSame(EvictionPolicy::SOFT, $cacheConfig->eviction);
+    }
+
+    public function testParseCacheElementWithWeakEviction(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="ProductMapper">
+                <cache eviction="WEAK"/>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $cacheConfig = $this->configuration->getCacheConfiguration('ProductMapper');
+        $this->assertSame(EvictionPolicy::WEAK, $cacheConfig->eviction);
+    }
+
+    public function testMapperWithoutCacheHasNoCacheConfiguration(): void
+    {
+        $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <mapper namespace="UserMapper">
+                <select id="findAll">
+                    SELECT * FROM users
+                </select>
+            </mapper>
+            XML;
+
+        $this->parser->parseXml($xml);
+
+        $cacheConfig = $this->configuration->getCacheConfiguration('UserMapper');
+        $this->assertNull($cacheConfig);
     }
 
     private function removeDirectory(string $dir): void

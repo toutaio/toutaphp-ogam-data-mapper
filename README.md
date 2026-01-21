@@ -62,7 +62,7 @@ class User
         <typeAlias alias="User" type="App\Entity\User"/>
     </typeAliases>
     <typeHandlers>
-        <typeHandler javaType="App\Enum\Status" handler="App\Handlers\StatusTypeHandler"/>
+        <typeHandler phpType="App\Enum\Status" handler="App\Handlers\StatusTypeHandler"/>
     </typeHandlers>
     <environments default="development">
         <environment id="development">
