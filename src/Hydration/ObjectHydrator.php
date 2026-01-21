@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Hydration;
 
+use Error;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -428,29 +429,29 @@ final class ObjectHydrator implements HydratorInterface
                 $currentValue[] = $item;
 
                 // If running on PHP 8.1+, avoid writing to readonly properties
-                if (\method_exists($prop, 'isReadOnly') && $prop->isReadOnly()) {
+                if (method_exists($prop, 'isReadOnly') && $prop->isReadOnly()) {
                     throw new RuntimeException(
-                        sprintf(
+                        \sprintf(
                             'Cannot add item to readonly collection property "%s" on class "%s".',
                             $property,
-                            $parent::class
-                        )
+                            $parent::class,
+                        ),
                     );
                 }
 
                 try {
                     $prop->setValue($parent, $currentValue);
-                } catch (\Error $e) {
+                } catch (Error $e) {
                     // Handle cases where the property is not actually mutable
                     throw new RuntimeException(
-                        sprintf(
+                        \sprintf(
                             'Failed to add item to collection property "%s" on class "%s": %s',
                             $property,
                             $parent::class,
-                            $e->getMessage()
+                            $e->getMessage(),
                         ),
                         0,
-                        $e
+                        $e,
                     );
                 }
             }
