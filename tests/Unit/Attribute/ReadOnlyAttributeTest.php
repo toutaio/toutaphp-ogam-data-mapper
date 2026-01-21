@@ -12,7 +12,7 @@ use ReflectionMethod;
 use Touta\Ogam\Attribute\ReadOptimized;
 
 #[CoversClass(ReadOptimized::class)]
-final class ReadOnlyAttributeTest extends TestCase
+final class ReadOptimizedAttributeTest extends TestCase
 {
     #[Test]
     public function canBeAppliedToClass(): void
