@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Touta\Ogam\Sql\Expression;
 
+use InvalidArgumentException;
 use ReflectionProperty;
 
 /**
@@ -473,7 +474,7 @@ final class ExpressionEvaluator
 
             $closing = $this->current();
             if ($closing === null || $closing['type'] !== 'operator' || $closing['value'] !== ')') {
-                throw new \InvalidArgumentException('Expected closing parenthesis ")" in expression.');
+                throw new InvalidArgumentException('Expected closing parenthesis ")" in expression.');
             }
             $this->advance(); // skip )
 
@@ -525,8 +526,8 @@ final class ExpressionEvaluator
         return match ($operator) {
             '===' => $left === $right,
             '!==' => $left !== $right,
-            '==' => $left == $right,
-            '!=' => $left != $right,
+            '==' => $left === $right,
+            '!=' => $left !== $right,
             '<' => $left < $right,
             '>' => $left > $right,
             '<=' => $left <= $right,
