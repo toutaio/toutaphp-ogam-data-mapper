@@ -226,9 +226,9 @@ final class PdoTransaction implements TransactionInterface
      *
      * @param string $name The savepoint name to validate
      *
-     * @return string The validated savepoint name
-     *
      * @throws InvalidArgumentException If the name is empty or contains invalid characters
+     *
+     * @return string The validated savepoint name
      */
     private function validateSavepointName(string $name): string
     {
@@ -236,8 +236,8 @@ final class PdoTransaction implements TransactionInterface
             throw new InvalidArgumentException(
                 \sprintf(
                     'Savepoint name "%s" is invalid. Only non-empty alphanumeric characters and underscores are allowed.',
-                    $name
-                )
+                    $name,
+                ),
             );
         }
 

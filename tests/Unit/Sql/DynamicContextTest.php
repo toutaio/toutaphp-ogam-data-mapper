@@ -134,4 +134,122 @@ final class DynamicContextTest extends TestCase
         $this->assertNull($context->evaluate('anything'));
         $this->assertFalse($context->evaluateBoolean('anything'));
     }
+
+    // ========================================================================
+    // Enhanced Expression Evaluation (Complex Expressions)
+    // ========================================================================
+
+    public function testEvaluateComparisonExpression(): void
+    {
+        $context = new DynamicContext($this->configuration, [
+            'status' => 'active',
+            'age' => 25,
+        ]);
+
+        $this->assertTrue($context->evaluateBoolean("status == 'active'"));
+        $this->assertFalse($context->evaluateBoolean("status == 'inactive'"));
+        $this->assertTrue($context->evaluateBoolean('age > 18'));
+        $this->assertTrue($context->evaluateBoolean('age >= 25'));
+        $this->assertFalse($context->evaluateBoolean('age < 18'));
+    }
+
+    public function testEvaluateNullCheckExpression(): void
+    {
+        $context = new DynamicContext($this->configuration, [
+            'name' => 'John',
+            'missing' => null,
+        ]);
+
+        $this->assertTrue($context->evaluateBoolean('name !== null'));
+        $this->assertFalse($context->evaluateBoolean('name === null'));
+        $this->assertTrue($context->evaluateBoolean('missing === null'));
+        $this->assertFalse($context->evaluateBoolean('missing !== null'));
+    }
+
+    public function testEvaluateLogicalExpression(): void
+    {
+        $context = new DynamicContext($this->configuration, [
+            'active' => true,
+            'verified' => false,
+            'age' => 25,
+        ]);
+
+        $this->assertTrue($context->evaluateBoolean('active && age > 18'));
+        $this->assertFalse($context->evaluateBoolean('active && verified'));
+        $this->assertTrue($context->evaluateBoolean('active || verified'));
+        $this->assertTrue($context->evaluateBoolean('!verified'));
+    }
+
+    public function testEvaluateComplexExpression(): void
+    {
+        $context = new DynamicContext($this->configuration, [
+            'user' => [
+                'status' => 'active',
+                'age' => 25,
+            ],
+            'includeInactive' => false,
+        ]);
+
+        // Complex real-world expression
+        $this->assertTrue($context->evaluateBoolean(
+            "(user.status == 'active' || includeInactive) && user.age >= 18",
+        ));
+    }
+
+    public function testEvaluateWithBoundVariable(): void
+    {
+        $context = new DynamicContext($this->configuration, [
+            'name' => 'John',
+        ]);
+
+        // Bind a variable
+        $context->bind('pattern', '%john%');
+
+        // Evaluate using both parameter and bound variable
+        $this->assertSame('%john%', $context->evaluate('pattern'));
+        $this->assertTrue($context->evaluateBoolean('name !== null'));
+    }
+
+    public function testEvaluateWithObjectParameter(): void
+    {
+        $user = new class {
+            public string $name = 'John';
+
+            public string $status = 'active';
+
+            public function getAge(): int
+            {
+                return 25;
+            }
+        };
+
+        $context = new DynamicContext($this->configuration, $user);
+
+        $this->assertSame('John', $context->evaluate('name'));
+        $this->assertTrue($context->evaluateBoolean("status == 'active'"));
+    }
+
+    public function testEvaluateStrictComparison(): void
+    {
+        $context = new DynamicContext($this->configuration, [
+            'count' => 5,
+            'text' => '5',
+        ]);
+
+        $this->assertTrue($context->evaluateBoolean('count === 5'));
+        $this->assertFalse($context->evaluateBoolean("count === '5'"));
+        $this->assertTrue($context->evaluateBoolean("text === '5'"));
+        $this->assertFalse($context->evaluateBoolean('text === 5'));
+    }
+
+    public function testEvaluateWithLiterals(): void
+    {
+        $context = new DynamicContext($this->configuration, []);
+
+        $this->assertTrue($context->evaluateBoolean('true'));
+        $this->assertFalse($context->evaluateBoolean('false'));
+        $this->assertNull($context->evaluate('null'));
+        $this->assertSame(42, $context->evaluate('42'));
+        $this->assertSame('hello', $context->evaluate("'hello'"));
+    }
 }
