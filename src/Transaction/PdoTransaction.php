@@ -117,7 +117,18 @@ final class PdoTransaction implements TransactionInterface
         }
 
         $this->connection->exec(\sprintf('RELEASE SAVEPOINT %s', $name));
-        unset($this->savepoints[$name]);
+
+        // Release the specified savepoint and all savepoints created after it.
+        $remove = false;
+        foreach ($this->savepoints as $savepointName => $_) {
+            if ($savepointName === $name) {
+                $remove = true;
+            }
+
+            if ($remove) {
+                unset($this->savepoints[$savepointName]);
+            }
+        }
     }
 
     /**
