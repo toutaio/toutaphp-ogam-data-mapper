@@ -603,18 +603,6 @@ final class ExpressionEvaluator
     }
 
     /**
-     * Check if the current token matches any of the expected values.
-     *
-     * @param list<string> $values
-     */
-    private function matchAny(array $values): bool
-    {
-        $token = $this->current();
-
-        return $token !== null && \in_array($token['value'], $values, true);
-    }
-
-    /**
      * Get the current token.
      *
      * @return array{type: string, value: string}|null
