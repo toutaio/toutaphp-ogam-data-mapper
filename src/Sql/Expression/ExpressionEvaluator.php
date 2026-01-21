@@ -470,6 +470,11 @@ final class ExpressionEvaluator
         if ($token['type'] === 'operator' && $token['value'] === '(') {
             $this->advance();
             $result = $this->parseExpression($bindings);
+
+            $closing = $this->current();
+            if ($closing === null || $closing['type'] !== 'operator' || $closing['value'] !== ')') {
+                throw new \InvalidArgumentException('Expected closing parenthesis ")" in expression.');
+            }
             $this->advance(); // skip )
 
             return $result;
