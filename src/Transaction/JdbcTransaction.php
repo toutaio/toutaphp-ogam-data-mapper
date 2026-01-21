@@ -137,6 +137,17 @@ final class JdbcTransaction implements TransactionInterface
             throw new RuntimeException(\sprintf('Savepoint "%s" does not exist', $name));
         }
 
+        // When rolling back to a savepoint, all savepoints created after it
+        // should be invalidated and removed from the internal tracking.
+        $savepointNames = \array_keys($this->savepoints);
+        $position = \array_search($name, $savepointNames, true);
+
+        if ($position !== false) {
+            $count = \count($savepointNames);
+            for ($i = $position + 1; $i < $count; $i++) {
+                unset($this->savepoints[$savepointNames[$i]]);
+            }
+        }
         $this->connection->exec(\sprintf('ROLLBACK TO SAVEPOINT %s', $name));
     }
 
